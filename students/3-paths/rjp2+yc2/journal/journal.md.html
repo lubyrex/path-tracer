@@ -1,0 +1,294 @@
+﻿                  <meta charset="utf-8">
+                 **Development Journal**
+
+Hey So
+=========================
+We're sorry we took so long. We tried to abide by the time controls, and did stop at 8 jours after we saw your email, but then had to finish the report and tests.
+
+
+2016-09-26: MVP report done
+=============================================================
+checkmark
+
+
+2016-09-26: Images gathered
+=============================================================
+Since we couldn't use our own intersection methods, we used G3D::TriTreeBase::intersectRay. We are not claiming it as our work, but rather using it to demonstrate our other code.
+We are building our custom scene, trying to keep it simple.
+
+
+2016-09-26: Testing complete
+=============================================================
+All tests performed and graphs gathered. Producing 640x400 images now
+
+2016-09-26: Testing 
+=============================================================
+Using a google sheet to perform our tests
+
+
+2016-09-26: Splitting up tasks
+=============================================================
+Eli is handling this journal and report. Ryan is adding the last GUI elements and prepping for 
+running tests. 
+
+
+2016-09-25: Sphere intersection: the lost cause
+=============================================================
+We might revisit it briefly, but we have to throw in the towel. Intersection
+is not within reach unless we're putting in more hours than Morgan would like. Giving in
+isn't fun.
+
+We're just going to clean up this journal, generate some graphs for the report using Morgan's 
+intersection code, clean up the comments for whichever poor soul has to use this code in the future, 
+and then give our final commit. 
+
+
+2016-09-25: Visual Studio hates sphere intersection 
+=============================================================
+We have a sphere intersection method that we believe to be (mostly) correct, but Visual Studio is 
+throwing a tantrum, saying that our custom sphere class (OurSphere) is actually a template? It's throwing
+so many weird errors concerning that one line that make absolutely no sense. Nobody in the lab knows what's going 
+on with the error messages.
+
+
+2016-09-25: Back to intersection
+=============================================================
+We're having serious trouble. As recommended, we backtracked and are trying to get
+sphere intersection working. We started with triangle because we had some form of the code for
+it and thought we understood what was going on. It appears that wasn't the case.
+
+
+2016-09-25: POLISH: Streaks eliminated
+=============================================================
+
+![THE STREAKS ARE GONE](2016-09-25_005_2-rays_r898_g3d_r848__THE_STREAKS_ARE_GONE.jpg)
+
+Jamie helped us isolate the problem: we weren't bumping the indirect rays before tracing them.
+
+
+
+2016-09-25: POLISH, revisited
+=============================================================
+Jamie messaged us about indirect rays, so we're taking a break with intersection and are now trying to make
+our indirect rays streak-free. She wanted to compare 10 indirect rays with 20:
+
+![10 indirect rays](2016-09-25_003_2-rays_r898_g3d_r848__.jpg)
+![20 indirect rays](2016-09-25_004_2-rays_r898_g3d_r848__.jpg)
+
+2016-09-25: MVP Intersection: work in progress
+=============================================================
+
+![Lower res](2016-09-25_002_2-rays_r888_g3d_r848__WHY.jpg)
+Interestingly, when we lower the res, the left rectangle _kind of_ appears?
+We don't know why this is. All focus is on this intersection, because MVP is within reach if we can get it.
+
+
+2016-09-25: First stab at intersections
+=============================================================
+
+![](2016-09-25_001_2-rays_r888_g3d_r848__.jpg)
+
+Somehow managed to ignore the boxes? We don't know why that is. At least it
+compiles...
+
+
+
+2016-09-24: Relapse (eminem style)
+=============================================================
+We've made some huge mistakes. Went way off the MVP rails trying to get our indirect light rendering working. 
+We're having weird streaking issues that we can't figure out.
+![This is way better than before though](2016-09-25_000_2-rays_r885_g3d_r848__This_is_way_better_than_before_though.jpg)
+
+
+However, we did get basic multithreading.
+
+
+
+2016-09-23: Huge time improvement
+=============================================================
+Moved TriTree and Light array construction to the highest level, as it will be the same 
+
+2016-09-24: ...still present with indirect lights, though
+=============================================================
+
+![](2016-09-24_003_2-rays_r831_g3d_r848__.jpg)
+
+
+
+2016-09-24: Shadow acne mostly solved
+=============================================================
+
+![](2016-09-24_002_2-rays_r831_g3d_r848__.jpg)
+
+Note the distinct lack of an acne breakout
+
+
+
+2016-09-24: Indirect lights kind of working
+=============================================================
+
+![](2016-09-24_001_2-rays_r831_g3d_r848__.jpg)
+
+We are dividing the recursive call by the amount of recursive calls... No idea
+if this is right.
+
+
+
+2016-09-24: Overexposed
+=============================================================
+
+![](2016-09-24_000_2-rays_r818_g3d_r848__.jpg)
+
+
+
+2016-09-23: Shading working kind of
+=============================================================
+
+![Shading using default intersection code. Not our own. Need to bump rays](2016-09-23_004_2-rays_r815_g3d_r848__Shading_using_default_intersection_code__Not_our_own__Need_to_bump_rays.jpg)
+
+Ray bumping proving challenging. We can't debug Ray::minDistance() because it isn't showing up in the list of locals when we make a variable for it, even when we use it.
+
+2016-09-23: WOW
+=============================================================
+
+![](2016-09-23_003_2-rays_r814_g3d_r848__.jpg)
+
+
+
+2016-09-23: Basic shading is go!
+=============================================================
+
+![Basic shading implemented on triangle](2016-09-23_002_2-rays_r814_g3d_r848__Basic_shading_implemented_on_triangle.jpg)
+
+Our direct illumination equation is implemented properly. Now, all we need to do
+is check intersections.
+
+
+
+2016-09-23: Some Pictures
+=============================================================
+
+![Tried to use just the emitted radiance](2016-09-23_001_2-rays_r799_g3d_r848__Tried_to_use_just_the_emitted_radiance.jpg)
+
+
+![](2016-09-23_000_2-rays_r799_g3d_r848__.jpg)
+
+
+Start: 4:25
+
+
+
+2016-09-22 TriTree email from Morgan
+=============================================================================
+
+Instantiate TriTree. 
+
+It inherits from TriTreeBase. Different classes implement TriTree on different platforms...EmbreeTriTree happens to be the current one used on Windows, but don't directly use EmbreeTriTree, let the magic happen behind the scenes so that your code will work on other platforms and in the future.
+
+-m
+
+
+2016-09-22 Filling up array of surfaces
+=============================================================================
+
+
+Good idea! But I'm even lazier. I just called this method on the array of Surfaces:
+
+http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_tri_tree_base.html#a52ce9fe15464e95b91b7396d0ce532d2
+
+-m
+
+Prof. Morgan McGuire
+Department of Computer Science
+Williams College
+
+
+On Thu, Sep 22, 2016 at 3:19 PM, Patton, Ryan <rjp2@williams.edu> wrote:
+Ok,
+
+So, we want to use onPose on our Scene to fill up an array of Surfaces, as we can ask each Surface for its tris using getTrisHomogenous
+-- 
+
+
+
+2016-09-22 to show images on screen...
+=============================================================================
+GApp::Show. Or you can literally just type show(image)
+
+
+2016-09-22 Lab continued
+=============================================================================
+
+Through many conceptual struggles, we have now realized that even though we can't include
+any intersection code in anything we turn in, we CAN use it for the DRAFT level.
+
+Right now, we're only getting a white screen, even using intersection code that we know works. We think
+this has to do with the ray construction, as every single pixel is giving us the same ray. This obviously
+doesn't make any sense, as every eyeRay should have a different direction. However, Ryan just solved it while sitting
+next to me. 
+
+
+2016-09-22 Thursday: Lab
+=============================================================================
+
+![GUI Version 1](2016-09-22_000_2-rays_r757_g3d_r763__GUI_Version_1.jpg)
+
+First version of GUI (draft) up and running
+
+Start Time: 1:10
+
+
+2016-09-21 Pre-Lab Preparation
+=========================================================================================================
+
+![Rendering Equation](equation.png)
+
+![Rendering Equation Variables](variables.png)
+
+Here is the explicit equation with its variables so we can reference it later.
+
+
+2016-09-21 Scheduled Meeting Times
+==========================================================================================================
+Thursday  1:00 - 4:00  (3 hours)
+Friday    4:00 - 6:00  (2 hours)
+Saturday  2:00 - 4:00  (2 hours) (optional)
+Sunday    4:00 - 6:00  (2 hours)
+Monday    3:00 - 6:00  (3 hours)
+ 
+
+
+Workflow
+==========================================================================================================
+
+
+ Task                     | Description                                                     |Planned Time(h)| Actual Time
+ -------------------------|-----------------------------------------------------------------|--------------:|------------:
+  Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     2.00      |  1.5
+  Lab Planning (Prep)     | Plan out major classes / methods                                |     1.00      |  0.0
+  Report Draft            | Formatted Markdeep document with placeholder text.              |     0.25      |  0.2
+  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.50      |  0.5    
+  Ray-Tracing Loop Draft  | Iterates over all pixels, post-processes image (not yet though) |     0.50      |  1.5
+  Ray Tracing Draft       | Write skeleton code with comments about what we have to do      |     0.50      |  1.5
+  Prim.Intersection Draft | Write skeleton code with comments about what we have to do      |     0.50      |  1.15   
+  Ray-Tracing Loop MVP    | Make code work passably                                         |     1.00      |  0.5
+  Ray Tracing MVP         | Make code work passably                                         |     1.00      |  1.5
+  Prim.Intersection MVP   | Make code work passably                                         |     1.00      |  2.0   
+  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  0.2 
+  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |  1.5    
+  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.50      |  0.0
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 or 96   |  5.75
+  Report Polish           | Grammar and spelling, content 100% correct                      |     0.50      |  1.0
+ [Project Workflow Planning Table.]
+
+Ryan and Eli worked together on almost all parts. At end, Ryan spent 2 hours on test generation and 2 on custom scene design.
+At end, Eli spent 3.5 hours on report and 0.5 on custom scene design
+
+MVP time: 11 hours
+Total: 18ish hours (sorry, but we got into it)
+
+
+
+
+<!-- Markdeep: -->
+<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace;}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>

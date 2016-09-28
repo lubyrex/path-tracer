@@ -1,0 +1,105 @@
+{ 
+ 	name = "ManOnBridge"; 
+
+ 	models = { 
+ 		footModel = ArticulatedModel::Specification { 
+			filename = "model/crate/crate.obj"; 
+			preprocess = { 
+				setMaterial(all(), "wood.png"); 
+				transformGeometry(all(), Matrix4::scale(1.000000, 0.500000, 3.000000)); 
+			}; 
+		}; 
+		legModel = ArticulatedModel::Specification { 
+			filename = "model/crate/crate.obj"; 
+			preprocess = { 
+				setMaterial(all(), "wood.png"); 
+				transformGeometry(all(), Matrix4::scale(2.000000, 8.000000, 2.000000)); 
+			}; 
+		}; 
+		bodyModel = ArticulatedModel::Specification { 
+			filename = "model/crate/crate.obj"; 
+			preprocess = { 
+				setMaterial(all(), "wood.png"); 
+				transformGeometry(all(), Matrix4::scale(6.000000, 8.000000, 3.000000)); 
+			}; 
+		}; 
+		armModel = ArticulatedModel::Specification { 
+			filename = "model/crate/crate.obj"; 
+			preprocess = { 
+				setMaterial(all(), "wood.png"); 
+				transformGeometry(all(), Matrix4::scale(2.000000, 7.000000, 2.000000)); 
+			}; 
+		}; 
+		headModel = ArticulatedModel::Specification { 
+			filename = "model/crate/crate.obj"; 
+			preprocess = { 
+				setMaterial(all(), "wood.png"); 
+				transformGeometry(all(), Matrix4::scale(3.000000, 4.700000, 2.000000)); 
+			}; 
+		}; 
+ 	}; 
+
+ 	entities = { 
+ 		sun = Light { 
+			attenuation = (0, 0, 1); 
+			bulbPower = Power3(4e+6); 
+			castsShadows = true; 
+			shadowMapBias = 0.01; 
+			track = lookAt(Point3(-15, 200, 40), Point3(0, 0, 0)); 
+			shadowMapSize = Vector2int16(2048, 2048); 
+			spotHalfAngleDegrees = 4; 
+			spotSquare = true; 
+			type = "SPOT"; 
+		}; 
+
+		skybox = Skybox { 
+			texture = "cubemap/lostvalley/lostvalley_*.jpg"; 
+		}; 
+
+		camera = Camera { 
+			frame = CFrame::fromXYZYPRDegrees(-19.500000, 23.700001, -29.500000,
+-152.199997, -16.900000, 0.000000);
+		}; 
+ 		
+ 		leftFoot = VisibleEntity { 
+			model = "footModel"; 
+			frame = CFrame::fromXYZYPRDegrees(0.000000, 0.000000, 1.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		rightFoot = VisibleEntity { 
+			model = "footModel"; 
+			frame = CFrame::fromXYZYPRDegrees(4.000000, 0.000000, 1.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		leftLeg = VisibleEntity { 
+			model = "legModel"; 
+			frame = CFrame::fromXYZYPRDegrees(0.000000, 4.250000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		rightLeg = VisibleEntity { 
+			model = "legModel"; 
+			frame = CFrame::fromXYZYPRDegrees(4.000000, 4.250000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		body = VisibleEntity { 
+			model = "bodyModel"; 
+			frame = CFrame::fromXYZYPRDegrees(2.000000, 12.000000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		head = VisibleEntity { 
+			model = "headModel"; 
+			frame = CFrame::fromXYZYPRDegrees(2.000000, 18.400000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		leftArm = VisibleEntity { 
+			model = "armModel"; 
+			frame = CFrame::fromXYZYPRDegrees(-1.000000, 11.500000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+		rightArm = VisibleEntity { 
+			model = "armModel"; 
+			frame = CFrame::fromXYZYPRDegrees(5.000000, 11.500000, 0.000000, 0.000000,
+0.000000, 0.000000);
+		}; 
+ 	}; 
+ }; 
