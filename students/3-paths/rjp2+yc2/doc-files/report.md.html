@@ -6,203 +6,135 @@
 
 
 
-Algorithms 
-=============================================================
-
-Ray tracing 
--------------------------------------------
-The radiance passed in a certian direction from a specific point X is calculated by the following equation:
-![Ray tracing equation from the Graphics Codex by Morgan McGuire](equation.png)
-
-As can be seen, there are two main components to the illumination:
-1. Emissivity: how much radiance is generated from the point itself
-2. Indirect illumination: how much radiance is scattered off the point along the ray
-
-Emissivity is a characteristic of the material at point X and is thus straight-forward to calculate.
-Indirect illumination can be broken into two terms: radiance from direct lights striking the surface at X and
-radiance scattered off other non-luminous surfaces that reach X. 
-
-Direct lighting (or shading)
-----------------------------------------------
-The illumination at point X from light L towards $\omega_{o}$, where $\omega_{i}$ is the vector from L towards X, can be thought of as
-
-$$ Visible(X,L)*f(\omega_{i}, \omega_{o})*|\omega_{i}\cdot\hat{n}|*\beta(L,X) $$
-
-Visible(X,L) checks whether or not the light is actually visible from X using intersection (see below), returning $1$ or $0$.
-$f(\omega_{i}, \omega_{o})$ is the finite scattering density of the material between those two vectors and is a function of material.
-$\beta(L,X)$ is the biradiance of L at X, which is a function of the light and distance between L and X.
-$|\omega_{i}\cdot\hat{n}|$ accounts for power being a function of the incident angle. We then sum over all lights to get
-
-$$\sum_{L = light}Visible(X,L)*f(\omega_{i}, \omega_{o})*|\omega_{i}\cdot\hat{n}|*\beta(L,X).$$
-
-
-Indirect lighting (the recursive call)
------------------------------------------------
-A point is also illuminated by light scattered off other non-emissive points. This term is recursive. Since we cannot integrate over all directions
-and multiply by $d\omega$, we instead sum over $n$ random directions and then multiply by $\frac{1}{n}$. 
-Rays $ r_{j} $ with origins at X are chosen at random, and the ray tracing is run recursively with this starting point (and the first intersection point $ X _{j} $). 
-Note that we must also multiply this result by the finite scattering density between $\omega_{j}$
-and $\omega_{i}$ to account for the absorption of this term at X:
-
-$$\sum_{j = 1}^{n} trace(X_{j}, \omega_{j}) * f(\omega_{j}, \omega_{i})$$
-
-
-Intersection
-----------------------------------------------
-Intersection is used to calculate the first surface hit by a ray. This lets us find X and whether or not lights are visible.
-The ray can be mathematically described as $P + \hat{\omega}t$, where P is the origin, $ \hat{\omega} $ is the unit vector pointing in the direction of
-the ray, and $ t $ is a positive scalar. If we can find an equation that implicitly describes a surface, we can set it equal to $ \hat{\omega}t $ and solve for t.
-If t is positive and exists, there was an intersection with the surface. 
-
-For example, spheres can be implicitly described by $ |X - C| = r $, where $ X $ is a point on 
-the surface, $ C $ is the center, and $ r $ is the radiance. Solving for t, we get a quadratic formula. Our 
-values exist when $ t > 0 $, and $ 4((P-C)^{2}-r^{2}) < (2\hat{\omega}\cdot(P-C))^{2} $.
-
 
 Implementation Design
 ============================================
 
-An instance of [RayTracer](file://doc/class_ray_tracer.html) is given an array of surfaces, from which
+
+An instance of [RayTracer](MAKE THIS RIGHT) (soon to be renamed) is given an array of surfaces (hopefully this will also change, from which
 it constructs a [G3D::TriTree](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_embree_tri_tree.html) to be used by the intersection methods.
 
-[RayTracer::trace](file://doc/class_ray_tracer.html#aa9b74cfb3fffc10e15128e9206d84557) is the highest level of abstraction, representing the ray equation (see above).
-RayTracer::trace first calls [intersectRay](file://doc/class_ray_tracer.html#a7033690a9d2c05dd8d82a96d02869f69) which returns a [surfel](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_surfel.html) representing the first object
-in the secene the ray intersects. That ray is then tested for shading (using [getDirectLight](file://doc/class_ray_tracer.html#ac86780fb8c45266163b3ce96531bfc6d]), indirect light 
-(via a recursive call on trace), and emissivity. The indirect lighting is calculated to a specified depth and breadth. 
+Our [APP::renderScene](link) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
 
-[intersectRay](file://doc/class_ray_tracer.html#a7033690a9d2c05dd8d82a96d02869f69) iterates through all objects in the scene, keeps track of the closest intersection, and 
-then returns a surfel element for the intersection.
+For the actual tracing part of our algorithm, we will be using Monte Carlo integration for calculating direct illumination (using probabilities determined by Importance Sampling). Indirect rays will be shosen using [Surfel::Scatter](LINK) to give us optimal convergence.
 
-Code is built upon Ryan Patton's Meshes and Cubes code.
+Code is built upon Ryan's, Eli's, Youle's and Matheus's rays code.
 
 
-Render Tests at 640 x 400
+Correctness Tests
 =============================================================
 
-Note that all the tests are performed with [G3D::TriTreeBase::intersectRay](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_tri_tree_base.html#a0143abda135ff37bf664892acb773be0),
- as our intersect does not work. The tests are only indicative of our shading and recursion techniques. We know the intersection is not correct, 
-so there is no point in trying to demonstrate that it is.
+![Eye Ray Directions](eye-ray-directions.jpg width = 300) ![World-Space Hit Positions](positions.png width = 300)
+![World-Space Geometric Normals](normals.png width = 300) ![Cornell Box](direct.png width = 300)
 
-![G3D Triangle w/o indirect light](triangleRender.png width = 300) ![G3D Cornell Box w/o indirect light](cornellNoIndirect.png width = 300)
-![G3D Cornell Box w/ indirect light](cornellIndirect.png width = 300) ![G3D Sponza w/o indirect light](sponzaNoIndirect.png width = 300)
-![Custom scene w/o indirect light](CustomDirect.png width = 300) ![Custom scene w/ indirect light](customIndirect.png width = 300)
+![Box w/ Mirror and Glass Balls](1.png width = 300) 
+
+![2 Scattering Events](2.png width = 150) ![3 Scattering Events](3.png width = 150)
+![4 Scattering Events](4.png width = 150) ![10 Scattering Events](10.png width = 150)
 
 
-Scalability Tests
+Performance
 ===========================================================
-Note that all the tests are performed with [G3D::TriTreeBase::intersectRay](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_tri_tree_base.html#a0143abda135ff37bf664892acb773be0), 
-as our intersect does not work. The tests are only pertinent to our shading and recursion techniques. 
 
-![](coreTest.png)
-
-Triangle Count
+Variance with Scattering Depth
 -------------------------------------------
-![](triangleTest.png)
+![](scattering-depth.png)
 
-Pixel Count
+
+Variance with Paths Per Pixel
 -------------------------------------------
-![](pixelTest.png)
+![](paths-per-pixel.png)
 
 
-Light Count
--------------------------------------------
-![](lightTest.png)
+
+Quality Demonstration Images
+===========================================================
+
+![Quality 1](quality.jpg width = 450)
 
 
-Indirect Ray Count
--------------------------------------------
-![](indirectTest.png)
 
+Phenomena Demonstration Images
+===========================================================
 
-Asymptotic Time Bounds
-===========================================
+Will have to pick 4 phenomena later....
 
-Theoretical asymptotic bounds:
-
-Triangles = Tri
-Recursive Call = rC
-Pixel Count = p
-Light Count = l
-Core Count = c
-
-
-$$ intersect = O(Tri) $$
-$$ trace = O(intersect + directLight + recursive) = O(Tri + Tri*l + rC*Tri*l ) = O( rC * Tri * l ) $$
-$$ pixel = O(\frac{trace}{c}) = O(\frac{ rC * Tri * l }{c}) $$
-$$ image = O(p * trace) = O(\frac{p * Tri * rC * l}{c}) $$
-
-
-Obviously we have exponential behavior. So this isn't accurate to what we report. Also, we think that for triangles, the heightmap condensed all of them into 2 triangles. It's
-the only way we'd get those results.
+![Caustics](door.jpg width = 150) ![Diffuse Interreflection](sponza.jpg width = 150) ![Soft Shadows](car-ao.jpg width = 150) ![Mirror Reflections](chess.jpg width = 150)
 
 
 Questions
 =============================================================
 
-1. _How would you derive an analytic intersection algorithm for a finite right cylinder?_ 
+1. _Why does it take four scattering events to produce a caustic? Give a diagram or otherwise explain what those events are._ 
 
-        First, check to find the t at which the ray comes within R of the cylinder's primary axis (where R is the cylinder's radius) to find if it hits the infinitely-extending cylinder. If the height of the intersection point is outside the range of the cylinder, discard the intersection. Then, perform a similar action on the two planes that contain the cylinder's caps: check to see if the reported intersection (if any)'s location satisfies $ \sqrt{(X.x - C.x)^{2} + (X.z - C.z)^{2})} \leq R $.
+        Hmm good question
 
-2. _How would you compute the intersection with a surface for which there was no analytic intersection solution. For example, an arbitrary continuous height function y(x,z)._ 
+2. _Derive an asymptotic bound on the run time of the global illumination renderer from the Rays project, were it to recurse to an arbitrary path depth. _ 
     
-    We could use a binary search to sample points around where we're looking for and work our way in. Once we are within some epsilon, we could say it intersects.
+    Will definitely do
         
 
-3. _How do you think a binary tree could be leveraged to accelerate the ray intersection process?_ 
+3. _Derive an asymptotic bound on the run time of the path tracer from this project using the same variables from the previous question._ 
 
-    We can resort, putting previous intersecting rays higher up in the tree, since they are more likely to be hit again (we know that they are likely closer to the camera than other triangles). Conversely, if a triangle is rejected in favor of a closer one, we can place it further down the tree, as it's less likely to be selected in the future.
+    W???
 
-Self-Evaluation
+4. _Derive an algorithm to sample the numbers from 0 to 100 proportional to their value._ 
+    
+    Be well
+    
+5. _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
+
+    A wizrd is never late, nor does he have to demonstrate mathematical rigor
+
+
+
+Self-Review
 =============================================================
 
-Overall, we deserve a solid B/B+. Besides small code errors/spec omissions and workflow disasters, it went pretty well.
+Overall, we deserve a solid A++. Positive visualization.
 
-Code style: Our code is not the cleanest solution, but the easiest to implement; polish would try to optimize and clean up code.
-Workflow (as represented by journal): Our workflow was not ideal--we were doing so well until intersection ruined us.
-Report quality: We believe the report to be of fairly high quality until we decided we'd spent too long. 
-Report depth/correctness: The report is not as deep as it could be, especially in implementation, algorithms, and time bounds, but what we present is correct, or at least reasonable.
+Code style: ___
 
-Reflection
+Workflow (as represented by journal): _____
+
+Report quality: _____
+
+Report depth/correctness: ___
+
+
+
+Skills
 ============================================================
 We learned:
 
-    - How to render images using ray tracing
+    - How to render images using path tracing
     - All of the many maths that went with that
-    - How to use Visual Studio's debugger
-    - Modular Programming (using your code to workshop other sections of our code)
+    - How to program in a multi-threading mindset / style
     - How to pair program
-    - How to go about basic abstraction in classes
-    - A third lesson in the pain of failed time-management
+
 
 Workflow
 ==========================================================================================================
 
-
  Task                     | Description                                                     |Planned Time(h)| Actual Time
  -------------------------|-----------------------------------------------------------------|--------------:|------------:
-  Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     2.00      |  1.5
-  Lab Planning (Prep)     | Plan out major classes / methods                                |     1.00      |  0.0
-  Report Draft            | Formatted Markdeep document with placeholder text.              |     0.25      |  0.2
-  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.50      |  0.5    
-  Ray-Tracing Loop Draft  | Iterates over all pixels, post-processes image (not yet though) |     0.50      |  1.5
-  Ray Tracing Draft       | Write skeleton code with comments about what we have to do      |     0.50      |  1.5
-  Prim.Intersection Draft | Write skeleton code with comments about what we have to do      |     0.50      |  1.15   
-  Ray-Tracing Loop MVP    | Make code work passably                                         |     1.00      |  0.5
-  Ray Tracing MVP         | Make code work passably                                         |     1.00      |  1.5
-  Prim.Intersection MVP   | Make code work passably                                         |     1.00      |  2.0   
-  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  0.2 
-  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |  1.5    
-  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.50      |  0.0
-  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 or 96   |  5.75
-  Report Polish           | Grammar and spelling, content 100% correct                      |     0.50      |  1.0
+  Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     1.50      |  1.5
+  Report Draft (Prep)     | Formatted Markdeep document with placeholder text.              |     0.75      |  0.75
+  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |     
+  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  
+  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  
+  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |   
+  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  
+  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  
+  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |
+  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |
+  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  
+  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |   
+  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      | 
+  Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    | 
+  Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  
  [Project Workflow Planning Table.]
-
-Ryan and Eli worked together on almost all parts. At end, Ryan spent 2 hours on test generation and 2 on custom scene design.
-At end, Eli spent 3.5 hours on report and 0.5 on custom scene design
-
-MVP time: 11 hours
-Total: 18ish hours (sorry, but we got into it)
-
 
 
 <!-- Markdeep: -->
