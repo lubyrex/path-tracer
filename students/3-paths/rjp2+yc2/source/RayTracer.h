@@ -13,7 +13,8 @@ protected:
 
     /** TriTree used to iterate through all triangles in the scene */
     TriTree tris;
-    //std::vector<OurSphere> spheres;
+    Array<shared_ptr<Light>> lights;
+
 
 
         /**
@@ -25,43 +26,19 @@ protected:
     /**
         Calculates direct illumination term at a surfel.
     */
-    Radiance3 getDirectLight(const Ray& ray, const shared_ptr<Surfel> surfel, const Array<shared_ptr<Light>>& lightArray) const;
+    Radiance3 getDirectLight(const Ray& ray, const shared_ptr<Surfel>& surfel, const Array<shared_ptr<Light>>& lightArray) const;
 
-
-    /**
-        Finds if \a sphere intersects \a ray and updates \a surfel with relevant information.
-        \return true if \a sphere is intersected.
-        Note that \a surfel will not have updated values if \a sphere is not intersected, and its
-        member variables will be non-deterministic.
-    */
-    //bool sphereIntersect(const OurSphere& sphere, const Ray& ray, shared_ptr<UniversalSurfel>& surfel) const;
-
-    
-
-    /**
-        Finds if \a tri intersects \a ray and updates \a hit with relevant information.
-        \return true if \a sphere is intersected.
-        Note that \a hit will not have updated its member variables if \a tri is not intersected, and its
-        values will be non-deterministic.
-    */
-    bool triangleIntersect(const Tri& tri, const Ray &ray, TriTree::Hit& hit) const;
-
-
-
-
-
-    /**
-        Returns the first surfel hit by the given ray. \return nullptr if no scene objects lie in the ray's path
-    */
-    const shared_ptr<Surfel> intersectRay(const Ray& ray) const;
 
 
 public:
+
+    //void renderScene(shared_ptr<Scene>& scene, shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int numIndirectRays = 1) const;
 
     /** Main ray tracing method. Finds radiance along ray coming from first intersecting object (looped over).
         Sums L_lights and recursive trace at location to find radiance
     */
     virtual Radiance3 trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft = 0, const bool isEyeRay = true) const;
+
 
     /** Constructor */
     RayTracer(Array<shared_ptr<Surface>> surfaces);
@@ -69,16 +46,5 @@ public:
 };
 
 
-/** Custom sphere class. Most likely broken */
-class OurSphere {
-public:
-    Vector3 m_center;
-    float m_radius;
-
-    OurSphere(Vector3 center, float radius) {
-        m_center = center;
-        m_radius = radius;
-    }
-};
 
 

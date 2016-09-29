@@ -11,29 +11,23 @@
 class App : public GApp {
 protected:
 
-    bool fixedPrimitives = false;
-
+    // Variables for render GUI
     bool m_multiThreading = true;
-    int m_raysPerPixel = 1;
-    float m_numIndirectRays = 0.0f;
-    int m_resolutionChoice = 0;
-
-    shared_ptr<Texture> m_resultTexture;
+    int m_raysPerPixel = 5;
+    int m_numIndirectRays = 1;
+    int m_resolutionChoice = 1;
 
 
-    int pixelWidth = 320;
-    int pixelHeight = 200;
-
-    shared_ptr<Image> m_currentImage;
+    void renderScene(shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int numIndirectRays = 1) const;
 
     /** Called by GUI to load a scene image. Invokes ray tracing performed by RayTracer class */
-    void render(shared_ptr<Image> &image, float indirectCount = 10, bool multithreading = true);
+    void onRender(shared_ptr<Image> &image);
 
     /** Called from onInit */
     void makeGUI();
 
 
-    //void addRenderGUI();
+    void addRenderGUI();
 
     void message(const String& msg) const;
 
