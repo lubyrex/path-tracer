@@ -32,7 +32,9 @@ protected:
 
 public:
 
-    //void renderScene(shared_ptr<Scene>& scene, shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int numIndirectRays = 1) const;
+    void renderScene(const shared_ptr<Scene>& scene, const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1) const;
+
+    void findIntersections(const Array<Ray>& rayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const Array<Color3>& modulationBuffer) const;
 
     /** Main ray tracing method. Finds radiance along ray coming from first intersecting object (looped over).
         Sums L_lights and recursive trace at location to find radiance

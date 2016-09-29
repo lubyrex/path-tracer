@@ -14,7 +14,7 @@ protected:
     // Variables for render GUI
     bool m_multiThreading = true;
     int m_raysPerPixel = 5;
-    int m_numIndirectRays = 1;
+    int m_scatteringEvents = 1;
     int m_resolutionChoice = 1;
 
 
@@ -44,5 +44,4 @@ public:
     virtual void onSimulation(RealTime rdt, SimTime sdt, SimTime idt) override;
 
     virtual void onGraphics3D(RenderDevice* rd, Array<shared_ptr<Surface> >& surface3D) override;
-
 };
