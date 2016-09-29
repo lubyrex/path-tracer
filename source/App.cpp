@@ -86,16 +86,10 @@ void App::message(const String& msg) const {
     renderDevice->swapBuffers();
 }
 
-
-
-
-void App::render(shared_ptr<Image> &image, float indirectCount, bool multithreading) {
-    // If we had gotten primitives working, we would have passed the value of the chekbox through this method to the the ray tracer to enable or disable the check for sphere
-    message("Rendering...");
-
+/*** Will render the scene using raw ray-tracing and store it in the passed image */
+ void App::renderScene(shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int numIndirectRays) const {
     int height = image->height();
     int width = image->width();
-
 
     // Set up a tri-tree representing the scene 
     Array<shared_ptr<Surface>> surfaces;
@@ -107,10 +101,7 @@ void App::render(shared_ptr<Image> &image, float indirectCount, bool multithread
     Array<shared_ptr<Light>> lightArray;
     scene()->getTypedEntityArray(lightArray);
 
-     StopWatch stopWatch = StopWatch();
-
      stopWatch.tick();
-
 
     Thread::runConcurrently(Point2int32(0, 0), Point2int32(width, height), [&](Point2int32 coord) {
         Ray eyeRay = scene()->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
@@ -120,146 +111,89 @@ void App::render(shared_ptr<Image> &image, float indirectCount, bool multithread
         int raysPerPixel = 5;
         int recursionDepth = 1;
         for (int i = 0; i < raysPerPixel; ++i) {
-            sum += tracer.trace(eyeRay, lightArray, indirectCount, recursionDepth);
+            sum += tracer.trace(eyeRay, lightArray, numIndirectRays, recursionDepth);
         }
         sum /= raysPerPixel;
 
         image->set(Point2int32(coord.x, coord.y), sum);
     }, !multithreading);
 
-    // Post-process
-    const shared_ptr<Texture>& src = Texture::fromImage("Source", m_currentImage);
-    if (m_resultTexture) {
-        m_resultTexture->resize(m_currentImage->width(), m_currentImage->height());
-    };
-
-    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x/* + settings().hdrFramebuffer.depthGuardBandThickness.x*/, settings().hdrFramebuffer.depthGuardBandThickness.x, m_resultTexture);
-    m_resultTexture->toImage()->save("result.png");
-
     stopWatch.tock();
+ }
 
-    // Set window caption to amount of time rendering took (not including data structure initialization
+
+
+
+void App::onRender(shared_ptr<Image> &image) {
+   
+    message("Rendering...");
+
+    StopWatch stopWatch = Stopwatch();
+
+    renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_numIndirectRays);
+
+    // Show / save raw image 
+    // Set window caption to amount of time rendering took (not including data structure initialization)
     double time = stopWatch.elapsedTime();
     String caption = (String)("Time: " + std::to_string(time));
     debugPrintf("%s\n", caption);
     show(image, caption);
+    image->save("CustomScene.png");
+
+    // Post-process image
+    // Why does the saved image look so weird???
+    const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
+    shared_ptr<Texture> resultTexture;
+    //if (m_resultTexture) {
+    //    m_resultTexture->resize(image->width(), image->height());
+    //};
+
+    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x/* + settings().hdrFramebuffer.depthGuardBandThickness.x*/, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+    resultTexture->toImage()->save("result.png");
 }
-//
-///// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
-//void App::addRenderGUI() {
-//    // resolution dropdown box
-//    // fixed primitives check box
-//    // multithreading check box
-//    // integer number box 0 - 2048
-//    // Render button
-//
-//    Array<String> resolutionOptions = { "1x1", "320x200", "640x400" };
-//
-//
-//    GuiPane* renderPane = debugPane->addPane("Render");
-//
-//    renderPane->addDropDownList("Resolution", resolutionOptions, resolutionChoice, [&]() {
-//
-//    });
-//
-//    renderPane->addCheckBox("Fixed Primitives", &fixedPrimitives);
-//
-//    renderPane->addCheckBox("Multithreading", &multithreading);
-//
-//    renderPane->setNewChildSize(240);
-//    renderPane->addNumberBox("Indirect Rays", &numIndirectRays, "m",
-//        GuiTheme::NO_SLIDER, 0.0f, 2048.0f)->setUnitsSize(30);
-//
-//    renderPane->addButton("Render", [&]() {
-//        // This code would have made the resolution box actually change the resolution (were having pointer errors)
-//        //if (*resolutionChoice == 0) {
-//        //    pixelWidth = 1;
-//        //    pixelHeight = 1;
-//        //}
-//        //else if (*resolutionChoice == 1) {
-//        //    pixelWidth = 320;
-//        //    pixelHeight = 200;
-//        //}
-//        //else {
-//        //    pixelWidth = 640;
-//        //    pixelHeight = 400;
-//        //}
-//
-//        // TESTING
-//        // Set pixel sizes. Temporary fix until above commented out code is working
-//        if (true) {
-//            pixelHeight = 400;
-//            pixelWidth = 640;
-//        }
-//
-//        shared_ptr<Image> image = Image::create(pixelWidth, pixelHeight, ImageFormat::RGB8());
-//        StopWatch stopWatch = StopWatch();
-//        render(scene(), G3D::GApp::activeCamera(), image, stopWatch, numIndirectRays, multithreading);
-//
-//        image->save("CustomScene.png");
-//
-//        // Set window caption to amount of time rendering took (not including data structure initialization
-//        double time = stopWatch.elapsedTime();
-//        String caption = (String)("Time: " + std::to_string(time));
-//        debugPrintf("%s\n", caption);
-//        show(image, caption);
-//
-//        // Code to display 'Rendering' message would go here
-//        ArticulatedModel::clearCache();
-//        loadScene(scene()->name());
-//    });
-//}
 
+/// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
+void App::addRenderGUI() {
 
-void App::makeGUI() {
+    shared_ptr<GuiWindow> renderWindow = GuiWindow::create("Render", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
+    GuiPane* renderPane = renderWindow->pane();
 
-    shared_ptr<GuiWindow> window = GuiWindow::create("Controls", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
-    GuiPane* pane = window->pane();
-    pane->addLabel("Use WASD keys + right mouse to move");
-    Array<String> resolution;
-    resolution.append("1x1", "320x200", "640x400");
-    pane->addDropDownList("Resolution", resolution, &m_resolutionChoice);
+    Array<String> resolutionOptions = {"1x1", "320x200", "640x400"};
 
-    //pane->addCheckBox("fixed primitives", &m_fixedPrimitives);
-    pane->addCheckBox("multithreading", &m_multiThreading);
-    pane->addNumberBox("Rays per pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
-    pane->addButton("reload", [this]() {loadScene(
-        developerWindow->sceneEditorWindow->selectedSceneName()  // Load the first scene encountered 
-    ); });
-
-    pane->addNumberBox("Indirect Rays", &m_numIndirectRays, "rays",
-       GuiTheme::NO_SLIDER, 0.0f, 2048.0f)->setUnitsSize(30);
-
-    pane->addButton("render", [this]() {
-
+    renderPane->addDropDownList("Resolution", resolutionOptions, &m_resolutionChoice);
+    renderPane->addNumberBox("Rays Per Pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
+    renderPane->addNumberBox("Indirect Rays", &m_numIndirectRays, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
+    renderPane->addCheckBox("Multithreading", &m_multiThreading);
+   
+    renderPane->addButton("Render", [&]() {
+        shared_ptr<Image> image;
         try {
             switch (m_resolutionChoice) {
-            case 0:m_currentImage = (Image::create(1, 1, ImageFormat::RGB8()));
+            case 0:image = (Image::create(1, 1, ImageFormat::RGB8()));
                 break;
-            case 1:m_currentImage = (Image::create(320, 200, ImageFormat::RGB8()));
+            case 1:image = (Image::create(320, 200, ImageFormat::RGB8()));
                 break;
-            case 2:m_currentImage = (Image::create(640, 400, ImageFormat::RGB8()));
+            case 2:image = (Image::create(640, 400, ImageFormat::RGB8()));
                 break;
             }
         }
         catch (...) {
             msgBox("Unable to render the image.");
         }
-        //render(scene(), scene()->defaultCamera(), )
-        //    m_rayTracer->m_runConcurrent = m_multiThreading;
-        //m_rayTracer->m_spheresOn = m_fixedPrimitives;
-        //m_rayTracer->m_raysPerPixel = m_raysPerPixel;
-        render(m_currentImage, m_raysPerPixel, m_multiThreading);
+
+        onRender(image);
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());
-
     });
 
-    window->pack();
+    renderWindow->pack();
+    renderWindow->setVisible(true);
+    addWidget(renderWindow);
+}
 
-    window->setVisible(true);
-    addWidget(window);
+
+void App::makeGUI() {
 
     // Initialize the developer HUD
     createDeveloperHUD();
@@ -267,12 +201,23 @@ void App::makeGUI() {
     debugWindow->setVisible(true);
     developerWindow->videoRecordDialog->setEnabled(true);
 
-    // TODO fix this
     debugWindow->pack();
-    //debugWindow->setRect(Rect2D::xywh(0, 0, (float)window()->width(), debugWindow->rect().height()));
+    debugWindow->setRect(Rect2D::xywh(0, 0, (float)window()->width(), debugWindow->rect().height()));
 
+    // Adds window with reload button
+    //shared_ptr<GuiWindow> controlsWindow = GuiWindow::create("Controls", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
+    //GuiPane* controlsPane = controlsWindow->pane();
+    //controlsPane->addLabel("Use WASD keys + right mouse to move");
 
-    //addRenderGUI();
+    //controlsPane->addButton("Reload", [this]() {loadScene(
+    //    developerWindow->sceneEditorWindow->selectedSceneName()  // Load the first scene encountered 
+    //); });
+
+    //controlsWindow->pack();
+    //controlsWindow->setVisible(true);
+    //addWidget(controlsWindow);
+
+    addRenderGUI();
 }
 
 
@@ -342,46 +287,3 @@ void App::onSimulation(RealTime rdt, SimTime sdt, SimTime idt) {
     debugWindow->setRect(Rect2D::xywh(0, 0, (float)window()->width(), debugWindow->rect().height()));
 }
 
-//
-//bool App::onEvent(const GEvent& event) {
-//    // Handle super-class events
-//    if (GApp::onEvent(event)) { return true; }
-//
-//    // If you need to track individual UI events, manage them here.
-//    // Return true if you want to prevent other parts of the system
-//    // from observing this specific event.
-//    //
-//    // For example,
-//    // if ((event.type == GEventType::GUI_ACTION) && (event.gui.control == m_button)) { ... return true; }
-//    // if ((event.type == GEventType::KEY_DOWN) && (event.key.keysym.sym == GKey::TAB)) { ... return true; }
-//    // if ((event.type == GEventType::KEY_DOWN) && (event.key.keysym.sym == 'p')) { ... return true; }
-//
-//    return false;
-//}
-//
-//
-//void App::onUserInput(UserInput* ui) {
-//    GApp::onUserInput(ui);
-//    (void)ui;
-//    // Add key handling here based on the keys currently held or
-//    // ones that changed in the last frame.
-//}
-//
-//
-//void App::onPose(Array<shared_ptr<Surface> >& surface, Array<shared_ptr<Surface2D> >& surface2D) {
-//    GApp::onPose(surface, surface2D);
-//
-//    // Append any models to the arrays that you want to later be rendered by onGraphics()
-//}
-//
-//
-//void App::onGraphics2D(RenderDevice* rd, Array<shared_ptr<Surface2D> >& posed2D) {
-//    // Render 2D objects like Widgets.  These do not receive tone mapping or gamma correction.
-//    Surface2D::sortAndRender(rd, posed2D);
-//}
-//
-//
-//void App::onCleanup() {
-//    // Called after the application loop ends.  Place a majority of cleanup code
-//    // here instead of in the constructor so that exceptions can be caught.
-//}
