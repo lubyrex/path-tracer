@@ -87,50 +87,132 @@ void App::message(const String& msg) const {
 }
 
 /*** Will render the scene using raw ray-tracing and store it in the passed image */
- void App::renderScene(shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int numIndirectRays) const {
+void App::renderScene(shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents) const {
+    //Scene changed
+    if (false) {
+        // extract surfaces from the scene
+        // rebuild the tree
+    }
     int height = image->height();
     int width = image->width();
+
+    // Why do we have to set to all black? to reset the picture??
+    // Not do this since we start each pixel radiance sum at black
+    //image->setAll(Color3::black());
 
     // Set up a tri-tree representing the scene 
     Array<shared_ptr<Surface>> surfaces;
     scene()->onPose(surfaces);
-
-    RayTracer tracer(surfaces);
+    TriTree tris;
+    tris.setContents(surfaces);
 
     // Grab light array for the scene
     Array<shared_ptr<Light>> lightArray;
     scene()->getTypedEntityArray(lightArray);
 
-     stopWatch.tick();
+    // Initalize path tracer
+    //RayTracer tracer(surfaces);
 
-    Thread::runConcurrently(Point2int32(0, 0), Point2int32(width, height), [&](Point2int32 coord) {
-        Ray eyeRay = scene()->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
+    // Start timing the actual rendering process (so dont take time to build data structures into account)
+    stopWatch.tick();
 
-        // This loop would let us expand the rendering algorithm to use multiple ray samples per pixel
-        Radiance3 sum = Radiance3::black();
-        int raysPerPixel = 5;
-        int recursionDepth = 1;
-        for (int i = 0; i < raysPerPixel; ++i) {
-            sum += tracer.trace(eyeRay, lightArray, numIndirectRays, recursionDepth);
+    int recursionDepth = 1;
+
+    const int numPixels = width * height;
+
+    Array<Color3> modulationBuffer;
+    Array<Ray> rayBuffer;
+    Array<shared_ptr<Surfel>> surfelBuffer;
+    Array<Biradiance3> biradianceBuffer;
+    Array<Ray> shadowRayBuffer;
+    Array<bool> lightShadowedBuffer;
+
+    modulationBuffer.resize(numPixels);
+    modulationBuffer.setAll(Color3(1 / (float)raysPerPixel));
+
+    rayBuffer.resize(numPixels);
+    surfelBuffer.resize(numPixels);
+    biradianceBuffer.resize(numPixels);
+    shadowRayBuffer.resize(numPixels);
+    lightShadowedBuffer.resize(numPixels);
+
+    // Iterate over num rays per pixel
+    for (int i = 0; i < raysPerPixel; ++i) {
+        // Generate all rays
+        Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
+            // TODO bump these around a bit
+            Ray ray = scene()->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
+            rayBuffer[coord.x * coord.y + coord.x] = ray;
+        }, !multithreading);
+
+        // Iterate over num scattering events
+        for (int i = 0; i < scatteringEvents; ++i) {
+
+            // Find intersection
+            Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
+                int i = coord.x * coord.y + coord.x;
+                // TODO can we bound the distance for better performance?
+                surfelBuffer[i] = tris.intersectRay(rayBuffer[i]);
+            }, !multithreading);
+
+            // Add emmited light from objects / scene
+            Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
+                int i = coord.x * coord.y + coord.x;
+                const shared_ptr<Surfel>& surfel = surfelBuffer[i];
+                if (notNull(surfel)) {
+                    // Emmited light from surfel
+                    modulationBuffer[i] += surfel->emittedRadiance(rayBuffer[i].direction());
+                } else {
+                    // Emmited light from skybox
+                    // TODO change this so it actualy works
+                     modulationBuffer[i] += Color3::black();
+                }
+            }, !multithreading);
+
+
+            if (lightArray.size() > 0) {
+            
+            
+            }
+
         }
-        sum /= raysPerPixel;
 
-        image->set(Point2int32(coord.x, coord.y), sum);
-    }, !multithreading);
+        Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
+
+        }, !multithreading);
+
+
+
+    }
+
+    //Thread::runConcurrently(Point2int32(0, 0), Point2int32(width, height), [&](Point2int32 coord) {
+    //    Ray eyeRay = scene()->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
+
+    //    // This loop would let us expand the rendering algorithm to use multiple ray samples per pixel
+    //    Radiance3 sum = Radiance3::black();
+    //    //int raysPerPixel = 5;
+    //    int recursionDepth = 1;
+    //    for (int i = 0; i < raysPerPixel; ++i) {
+    //        sum += tracer.trace(eyeRay, lightArray, scatteringEvents, recursionDepth);
+    //    }
+    //    sum /= raysPerPixel;
+
+    //    image->set(Point2int32(coord.x, coord.y), sum);
+    //}, !multithreading);
 
     stopWatch.tock();
- }
+}
 
 
 
 
 void App::onRender(shared_ptr<Image> &image) {
-   
+
     message("Rendering...");
 
     StopWatch stopWatch = Stopwatch();
 
-    renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_numIndirectRays);
+    renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
 
     // Show / save raw image 
     // Set window caption to amount of time rendering took (not including data structure initialization)
@@ -144,12 +226,15 @@ void App::onRender(shared_ptr<Image> &image) {
     // Why does the saved image look so weird???
     const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
     shared_ptr<Texture> resultTexture;
+    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
+    resultTexture->toImage()->save("result.png");
+
+
     //if (m_resultTexture) {
     //    m_resultTexture->resize(image->width(), image->height());
     //};
 
-    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x/* + settings().hdrFramebuffer.depthGuardBandThickness.x*/, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
-    resultTexture->toImage()->save("result.png");
+
 }
 
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
@@ -158,13 +243,13 @@ void App::addRenderGUI() {
     shared_ptr<GuiWindow> renderWindow = GuiWindow::create("Render", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
     GuiPane* renderPane = renderWindow->pane();
 
-    Array<String> resolutionOptions = {"1x1", "320x200", "640x400"};
+    Array<String> resolutionOptions = { "1x1", "320x200", "640x400" };
 
     renderPane->addDropDownList("Resolution", resolutionOptions, &m_resolutionChoice);
     renderPane->addNumberBox("Rays Per Pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
-    renderPane->addNumberBox("Indirect Rays", &m_numIndirectRays, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
+    renderPane->addNumberBox("Scattering Events", &m_scatteringEvents, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
     renderPane->addCheckBox("Multithreading", &m_multiThreading);
-   
+
     renderPane->addButton("Render", [&]() {
         shared_ptr<Image> image;
         try {
