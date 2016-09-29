@@ -14,7 +14,7 @@
     <ProjectGuid>{B87D787E-E674-465A-AED3-8264ED17DFB1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>starter</RootNamespace>
-    <ProjectName>2-rays</ProjectName>
+    <ProjectName>3-paths</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
