@@ -70,79 +70,28 @@ void App::onInit() {
     // developerWindow->videoRecordDialog->setCaptureGui(false);
     developerWindow->cameraControlWindow->moveTo(Point2(developerWindow->cameraControlWindow->rect().x0(), 0));
     loadScene(
-        "Test Scene");
+        "G3D Cornell Box");
     //developerWindow->sceneEditorWindow->selectedScend
 
-    // Generate heightmaps with right numbers of triangles
-    //generateHeightField(1);
-    //generateHeightField(10);
-    //generateHeightField(100);
-    //generateHeightField(1000);
-    //generateHeightField(10000);
 }
 
+void App::message(const String& msg) const {
+    renderDevice->clear();
+    renderDevice->push2D();
+    debugFont->draw2D(renderDevice, msg, renderDevice->viewport().center(), 12,
+        Color3::white(), Color4::clear(), GFont::XALIGN_CENTER, GFont::YALIGN_CENTER);
+    renderDevice->pop2D();
 
-/// Generate a greyscale heightfield object with a specific number of triangles
-void App::generateHeightField(int numTriangles) {
-    String name = String("model/heightfield" + std::to_string(numTriangles) + ".off");
-    G3D::TextOutput objectFile = G3D::TextOutput(name);
-
-    int numSquares = numTriangles / 2;
-
-    int width = 2;
-    int height = numSquares + 1;
-
-    int numPoints = width * height;
-    int numFaces = (width - 1) * (height - 1) * 2;
-
-    // OFF file header
-    objectFile.printf(STR(
-        OFF\n
-        %d %d 0\n\n
-    ), numPoints, numFaces);
-
-    // Generate points
-    for (int i = 0; i < height; ++i) {
-        for (int j = 0; j < width; ++j) {
-
-            float x = i;
-            float y = 1;
-            float z = j;
-
-            objectFile.printf(STR(
-                %f %f %f\n
-            ), x, y, z);
-        }
-    }
-
-    objectFile.writeNewline();
-
-    // Generate faces from triangle mesh
-    // Each group of four has orientation
-    // a c
-    // b d
-    for (int i = 0; i < height - 1; ++i) {
-        for (int j = 0; j < width - 1; ++j) {
-            int a = i *  width + j;
-            int b = (i + 1) * width + j;
-            int c = a + 1;
-            int d = b + 1;
-
-            objectFile.printf(STR(
-                3 % d %d %d\n
-                3 % d %d %d\n
-            ), a, c, b, b, c, d);
-        }
-    }
-
-    objectFile.commit();
+    // Force update so that we can see the message
+    renderDevice->swapBuffers();
 }
 
 
 
 
-void App::render(shared_ptr<Scene> &scene, const shared_ptr<Camera> &camera, shared_ptr<Image> &image,  StopWatch& stopWatch, float indirectCount, bool multithreading) {
+void App::render(shared_ptr<Image> &image, float indirectCount, bool multithreading) {
     // If we had gotten primitives working, we would have passed the value of the chekbox through this method to the the ray tracer to enable or disable the check for sphere
+    message("Rendering...");
 
     int height = image->height();
     int width = image->width();
@@ -150,20 +99,21 @@ void App::render(shared_ptr<Scene> &scene, const shared_ptr<Camera> &camera, sha
 
     // Set up a tri-tree representing the scene 
     Array<shared_ptr<Surface>> surfaces;
-    scene->onPose(surfaces);
+    scene()->onPose(surfaces);
 
     RayTracer tracer(surfaces);
 
     // Grab light array for the scene
     Array<shared_ptr<Light>> lightArray;
-    scene->getTypedEntityArray(lightArray);
+    scene()->getTypedEntityArray(lightArray);
 
-    stopWatch.tick();
+     StopWatch stopWatch = StopWatch();
 
-   
+     stopWatch.tick();
+
 
     Thread::runConcurrently(Point2int32(0, 0), Point2int32(width, height), [&](Point2int32 coord) {
-        Ray eyeRay = camera->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
+        Ray eyeRay = scene()->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(image->width(), image->height())));
 
         // This loop would let us expand the rendering algorithm to use multiple ray samples per pixel
         Radiance3 sum = Radiance3::black();
@@ -177,106 +127,152 @@ void App::render(shared_ptr<Scene> &scene, const shared_ptr<Camera> &camera, sha
         image->set(Point2int32(coord.x, coord.y), sum);
     }, !multithreading);
 
-    // Here is where we would post-process the image
+    // Post-process
+    const shared_ptr<Texture>& src = Texture::fromImage("Source", m_currentImage);
+    if (m_resultTexture) {
+        m_resultTexture->resize(m_currentImage->width(), m_currentImage->height());
+    };
+
+    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x/* + settings().hdrFramebuffer.depthGuardBandThickness.x*/, settings().hdrFramebuffer.depthGuardBandThickness.x, m_resultTexture);
+    m_resultTexture->toImage()->save("result.png");
 
     stopWatch.tock();
+
+    // Set window caption to amount of time rendering took (not including data structure initialization
+    double time = stopWatch.elapsedTime();
+    String caption = (String)("Time: " + std::to_string(time));
+    debugPrintf("%s\n", caption);
+    show(image, caption);
 }
-
-/// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
-void App::addRenderGUI() {
-    // resolution dropdown box
-    // fixed primitives check box
-    // multithreading check box
-    // integer number box 0 - 2048
-    // Render button
-
-    Array<String> resolutionOptions = { "1x1", "320x200", "640x400" };
-
-
-    GuiPane* renderPane = debugPane->addPane("Render");
-
-    renderPane->addDropDownList("Resolution", resolutionOptions, resolutionChoice, [&]() {
-
-    });
-
-    renderPane->addCheckBox("Fixed Primitives", &fixedPrimitives);
-
-    renderPane->addCheckBox("Multithreading", &multithreading);
-
-    renderPane->setNewChildSize(240);
-    renderPane->addNumberBox("Indirect Rays", &numIndirectRays, "m",
-        GuiTheme::NO_SLIDER, 0.0f, 2048.0f)->setUnitsSize(30);
-
-    renderPane->addButton("Render", [&]() {
-        // This code would have made the resolution box actually change the resolution (were having pointer errors)
-        //if (*resolutionChoice == 0) {
-        //    pixelWidth = 1;
-        //    pixelHeight = 1;
-        //}
-        //else if (*resolutionChoice == 1) {
-        //    pixelWidth = 320;
-        //    pixelHeight = 200;
-        //}
-        //else {
-        //    pixelWidth = 640;
-        //    pixelHeight = 400;
-        //}
-
-        // TESTING
-        // Set pixel sizes. Temporary fix until above commented out code is working
-        if (true) {
-            pixelHeight = 400;
-            pixelWidth = 640;
-        }
-
-        shared_ptr<Image> image = Image::create(pixelWidth, pixelHeight, ImageFormat::RGB8());
-        StopWatch stopWatch = StopWatch();
-        render(scene(), G3D::GApp::activeCamera(), image, stopWatch, numIndirectRays, multithreading);
-
-        image->save("CustomScene.png");
-
-        // Set window caption to amount of time rendering took (not including data structure initialization
-        double time = stopWatch.elapsedTime();
-        String caption = (String)("Time: " + std::to_string(time));
-        debugPrintf("%s\n", caption);
-        show(image, caption);
-
-        // Code to display 'Rendering' message would go here
-        ArticulatedModel::clearCache();
-        loadScene(scene()->name());
-    });
-}
+//
+///// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
+//void App::addRenderGUI() {
+//    // resolution dropdown box
+//    // fixed primitives check box
+//    // multithreading check box
+//    // integer number box 0 - 2048
+//    // Render button
+//
+//    Array<String> resolutionOptions = { "1x1", "320x200", "640x400" };
+//
+//
+//    GuiPane* renderPane = debugPane->addPane("Render");
+//
+//    renderPane->addDropDownList("Resolution", resolutionOptions, resolutionChoice, [&]() {
+//
+//    });
+//
+//    renderPane->addCheckBox("Fixed Primitives", &fixedPrimitives);
+//
+//    renderPane->addCheckBox("Multithreading", &multithreading);
+//
+//    renderPane->setNewChildSize(240);
+//    renderPane->addNumberBox("Indirect Rays", &numIndirectRays, "m",
+//        GuiTheme::NO_SLIDER, 0.0f, 2048.0f)->setUnitsSize(30);
+//
+//    renderPane->addButton("Render", [&]() {
+//        // This code would have made the resolution box actually change the resolution (were having pointer errors)
+//        //if (*resolutionChoice == 0) {
+//        //    pixelWidth = 1;
+//        //    pixelHeight = 1;
+//        //}
+//        //else if (*resolutionChoice == 1) {
+//        //    pixelWidth = 320;
+//        //    pixelHeight = 200;
+//        //}
+//        //else {
+//        //    pixelWidth = 640;
+//        //    pixelHeight = 400;
+//        //}
+//
+//        // TESTING
+//        // Set pixel sizes. Temporary fix until above commented out code is working
+//        if (true) {
+//            pixelHeight = 400;
+//            pixelWidth = 640;
+//        }
+//
+//        shared_ptr<Image> image = Image::create(pixelWidth, pixelHeight, ImageFormat::RGB8());
+//        StopWatch stopWatch = StopWatch();
+//        render(scene(), G3D::GApp::activeCamera(), image, stopWatch, numIndirectRays, multithreading);
+//
+//        image->save("CustomScene.png");
+//
+//        // Set window caption to amount of time rendering took (not including data structure initialization
+//        double time = stopWatch.elapsedTime();
+//        String caption = (String)("Time: " + std::to_string(time));
+//        debugPrintf("%s\n", caption);
+//        show(image, caption);
+//
+//        // Code to display 'Rendering' message would go here
+//        ArticulatedModel::clearCache();
+//        loadScene(scene()->name());
+//    });
+//}
 
 
 void App::makeGUI() {
+
+    shared_ptr<GuiWindow> window = GuiWindow::create("Controls", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
+    GuiPane* pane = window->pane();
+    pane->addLabel("Use WASD keys + right mouse to move");
+    Array<String> resolution;
+    resolution.append("1x1", "320x200", "640x400");
+    pane->addDropDownList("Resolution", resolution, &m_resolutionChoice);
+
+    //pane->addCheckBox("fixed primitives", &m_fixedPrimitives);
+    pane->addCheckBox("multithreading", &m_multiThreading);
+    pane->addNumberBox("Rays per pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
+    pane->addButton("reload", [this]() {loadScene(
+        developerWindow->sceneEditorWindow->selectedSceneName()  // Load the first scene encountered 
+    ); });
+
+    pane->addNumberBox("Indirect Rays", &m_numIndirectRays, "rays",
+       GuiTheme::NO_SLIDER, 0.0f, 2048.0f)->setUnitsSize(30);
+
+    pane->addButton("render", [this]() {
+
+        try {
+            switch (m_resolutionChoice) {
+            case 0:m_currentImage = (Image::create(1, 1, ImageFormat::RGB8()));
+                break;
+            case 1:m_currentImage = (Image::create(320, 200, ImageFormat::RGB8()));
+                break;
+            case 2:m_currentImage = (Image::create(640, 400, ImageFormat::RGB8()));
+                break;
+            }
+        }
+        catch (...) {
+            msgBox("Unable to render the image.");
+        }
+        //render(scene(), scene()->defaultCamera(), )
+        //    m_rayTracer->m_runConcurrent = m_multiThreading;
+        //m_rayTracer->m_spheresOn = m_fixedPrimitives;
+        //m_rayTracer->m_raysPerPixel = m_raysPerPixel;
+        render(m_currentImage, m_raysPerPixel, m_multiThreading);
+
+        ArticulatedModel::clearCache();
+        loadScene(scene()->name());
+
+    });
+
+    window->pack();
+
+    window->setVisible(true);
+    addWidget(window);
+
     // Initialize the developer HUD
     createDeveloperHUD();
 
     debugWindow->setVisible(true);
     developerWindow->videoRecordDialog->setEnabled(true);
 
-    //GuiPane* infoPane = debugPane->addPane("Info", GuiTheme::ORNATE_PANE_STYLE);
-    //// Example of how to add debugging controls
-    //infoPane->addLabel("You can add GUI controls");
-    //infoPane->addLabel("in App::onInit().");
-    //infoPane->addButton("Exit", [this]() { m_endProgram = true; });
-    //infoPane->pack();
-
-    // More examples of debugging GUI controls:
-    // debugPane->addCheckBox("Use explicit checking", &explicitCheck);
-    // debugPane->addTextBox("Name", &myName);
-    // debugPane->addNumberBox("height", &height, "m", GuiTheme::LINEAR_SLIDER, 1.0f, 2.5f);
-    // button = debugPane->addButton("Run Simulator");
-    // debugPane->addButton("Generate Heightfield", [this](){ generateHeightfield(); });
-    // debugPane->addButton("Generate Heightfield", [this](){ makeHeightfield(imageName, scale, "model/heightfield.off"); });
-
+    // TODO fix this
     debugWindow->pack();
-    debugWindow->setRect(Rect2D::xywh(0, 0, (float)window()->width(), debugWindow->rect().height()));
+    //debugWindow->setRect(Rect2D::xywh(0, 0, (float)window()->width(), debugWindow->rect().height()));
 
-    // addCylinderGUI();
-    // addHeightFieldGUI();
-     //addGlassGUI();
-    addRenderGUI();
+
+    //addRenderGUI();
 }
 
 

@@ -12,37 +12,30 @@ class App : public GApp {
 protected:
 
     bool fixedPrimitives = false;
-    bool multithreading = true;
-    float numIndirectRays = 0.0f;
-    Pointer<int> resolutionChoice = int(0);
+
+    bool m_multiThreading = true;
+    int m_raysPerPixel = 1;
+    float m_numIndirectRays = 0.0f;
+    int m_resolutionChoice = 0;
+
+    shared_ptr<Texture> m_resultTexture;
+
+
     int pixelWidth = 320;
     int pixelHeight = 200;
 
+    shared_ptr<Image> m_currentImage;
+
     /** Called by GUI to load a scene image. Invokes ray tracing performed by RayTracer class */
-    void render(shared_ptr<Scene> &scene, const shared_ptr<Camera> &camera, shared_ptr<Image> &image,  StopWatch& stopWatch, float indirectCount = 10, bool multithreading = true);
+    void render(shared_ptr<Image> &image, float indirectCount = 10, bool multithreading = true);
 
     /** Called from onInit */
     void makeGUI();
 
-    // variables for cylinder gui
-    //float m_cylinderRadius;
-    //float m_cylinderHeight;
-    //bool m_cylinderHollow;
 
-    //// variables for height field gui
-    //float m_heightfieldYScale;
-    //float m_heightfieldXZScale;
-    //String m_heightfieldSource;
+    //void addRenderGUI();
 
-    //// variables for glass gui
-    //float m_glassSlicesNumber;
-
-    // gui addition methods
-   // void addCylinderGUI();
-    //void addHeightFieldGUI();
-    void addRenderGUI();
-
-    void generateHeightField(int numTriangles);
+    void message(const String& msg) const;
 
     // object generation methods
     //void generateCylinder(int radius, int height, bool hollow);
