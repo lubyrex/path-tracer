@@ -17,9 +17,6 @@ protected:
     int m_scatteringEvents = 1;
     int m_resolutionChoice = 1;
 
-
-    void renderScene(shared_ptr<Image> image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int numIndirectRays = 1) const;
-
     /** Called by GUI to load a scene image. Invokes ray tracing performed by RayTracer class */
     void onRender(shared_ptr<Image> &image);
 
