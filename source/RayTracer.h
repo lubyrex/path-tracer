@@ -38,7 +38,7 @@ public:
 
     void traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
 
-    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, const Array<Biradiance3>& biradianceBuffer, const Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const;
+    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, const Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const;
 
     void testVisibility(const Array<Ray>& shadowRayBuffer, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const;
  

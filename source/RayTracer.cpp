@@ -118,7 +118,7 @@ void RayTracer::testVisibility(const Array<Ray>& shadowRayBuffer, const Array<Bi
 }
 
 
-void RayTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, const Array<Biradiance3>& biradianceBuffer, const Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const {
+void RayTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const {
 
     // Calculate biradiance from each light source
     Thread::runConcurrently(0, numPixels, [&](int i) {
@@ -133,12 +133,33 @@ void RayTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const A
                 sum += B.sum();
             }
 
+            int lightPos;
+
+
             // Select random light
-            // TODO make random
+            // TODO make random bewteen 0 and sum
             int counter = 10;
             for (int j = 0; j < lightArray.size(); ++j) {
                 counter -= lightArray[i]->biradiance(pos).sum();
+                if (counter < 0) {
+                    lightPos = j;
+                    break;
+                }
             }
+
+            const shared_ptr<Light>& light = lightArray[lightPos];
+
+            biradianceBuffer[i] = light->biradiance(pos);
+
+
+            const Vector3& directionToLight = (light->position().xyz() - pos).direction();
+            //const Vector3& directionFromLight = (pos - light->position().xyz()).direction();
+
+            const Point3 bumpedPoint = pos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionToLight))));
+
+            //directionToLight = (light->position().xyz() - bumpedPoint).direction();
+            const Ray& shadowRay = Ray(bumpedPoint, directionToLight);
+            shadowRayBuffer[i] = shadowRay;
         }
 
     }, !multithreading);
@@ -157,21 +178,23 @@ void RayTracer::generateRays(Array<Ray>& rayBuffer, const shared_ptr<Scene>& sce
 
 void RayTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const {
     // Find intersection
-    Thread::runConcurrently(0, numPixels, [&](int i) {
-        const shared_ptr<Surfel>& surfel = tris.intersectRay(rayBuffer[i]);
-        surfelBuffer[i] = surfel;
+    tris.intersectRays(rayBuffer, surfelBuffer);
 
-        //// Add emmited light from objects / scene
-        //if (notNull(surfel)) {
-        //    // Emmited light from surfel
-        //    modulationBuffer[i] += surfel->emittedRadiance(rayBuffer[i].direction());
-        //}
-        //else {
-        //    // Emmited light from skybox
-        //    // TODO change this so it actualy works
-        //    modulationBuffer[i] += Color3::black();
-        //}
-    }, !multithreading);
+    //Thread::runConcurrently(0, numPixels, [&](int i) {
+    //    const shared_ptr<Surfel>& surfel = tris.intersectRay(rayBuffer[i]);
+    //    surfelBuffer[i] = surfel;
+
+    //    //// Add emmited light from objects / scene
+    //    //if (notNull(surfel)) {
+    //    //    // Emmited light from surfel
+    //    //    modulationBuffer[i] += surfel->emittedRadiance(rayBuffer[i].direction());
+    //    //}
+    //    //else {
+    //    //    // Emmited light from skybox
+    //    //    // TODO change this so it actualy works
+    //    //    modulationBuffer[i] += Color3::black();
+    //    //}
+    //}, !multithreading);
 }
 
 
