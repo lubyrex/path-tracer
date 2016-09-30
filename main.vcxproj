@@ -87,11 +87,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="source\App.h" />
-    <ClInclude Include="source\RayTracer.h" />
+    <ClInclude Include="source\PathTracer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\App.cpp" />
-    <ClCompile Include="source\RayTracer.cpp" />
+    <ClCompile Include="source\PathTracer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resources.rc" />
