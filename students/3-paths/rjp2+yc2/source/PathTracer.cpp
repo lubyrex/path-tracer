@@ -1,43 +1,36 @@
-#include "RayTracer.h"
+#include "PathTracer.h"
 #include "App.h"
 
 
-/** constructs TriTree object used in RayTracer::intersectRay and RayTracer::triangleIntersect */
-RayTracer::RayTracer() {
-    //tris.setContents(surfaces);
+/** constructs TriTree object used in PathTracer::intersectRay and PathTracer::triangleIntersect */
+PathTracer::PathTracer(shared_ptr<Scene> scene) {
+    setScene(scene);
 }
 
-void RayTracer::renderScene(const shared_ptr<Scene>& scene, const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents) const {
+void PathTracer::setScene(shared_ptr<Scene> scene) {
+    m_scene = scene;
+    // Set up tri-tree representing the scene 
+    Array<shared_ptr<Surface>> surfaces;
+    scene->onPose(surfaces);
+    m_tris.setContents(surfaces);
+}
+
+void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents) const {
     //Scene changed
     if (false) {
         // extract surfaces from the scene
         // rebuild the tree
     }
-    int height = image->height();
-    int width = image->width();
-
-    // Why do we have to set to all black? to reset the picture??
-    // Not do this since we start each pixel radiance sum at black
-    //image->setAll(Color3::black());
-
-    // Set up a tri-tree representing the scene 
-    Array<shared_ptr<Surface>> surfaces;
-    scene->onPose(surfaces);
-    TriTree tris;
-    tris.setContents(surfaces);
 
     // Grab light array for the scene
     Array<shared_ptr<Light>> lightArray;
-    scene->getTypedEntityArray(lightArray);
-
-    // Initalize path tracer
-    //RayTracer tracer(surfaces);
+    m_scene->getTypedEntityArray(lightArray);
 
     // Start timing the actual rendering process (so dont take time to build data structures into account)
     stopWatch.tick();
 
-    int recursionDepth = 1;
-
+    const int height = image->height();
+    const int width = image->width();
     const int numPixels = width * height;
 
     Array<Color3> modulationBuffer;
@@ -59,7 +52,7 @@ void RayTracer::renderScene(const shared_ptr<Scene>& scene, const shared_ptr<Ima
     // Iterate over num rays per pixel
     for (int i = 0; i < raysPerPixel; ++i) {
         // Generate all rays
-        generateRays(rayBuffer, scene, width, height, multithreading);
+        generateRays(rayBuffer, width, height, multithreading);
 
         // Iterate over num scattering events
         for (int i = 0; i < scatteringEvents; ++i) {
@@ -73,21 +66,21 @@ void RayTracer::renderScene(const shared_ptr<Scene>& scene, const shared_ptr<Ima
                 chooseLights(lightArray, surfelBuffer, biradianceBuffer, shadowRayBuffer, numPixels, multithreading);
 
                 // Test whether light is actually visible
-                testVisibility(shadowRayBuffer, biradianceBuffer, lightShadowedBuffer, numPixels, multithreading);
+                testVisibility(shadowRayBuffer, surfelBuffer, lightShadowedBuffer, numPixels, multithreading);
             }
 
             // Generate recursive rays
-            generateRecursiveRays(rayBuffer, numPixels, multithreading);
+            generateRecursiveRays(rayBuffer, surfelBuffer, numPixels, multithreading);
 
             // Update modulation buffer
-            updateModulation(modulationBuffer, numPixels, multithreading);
+            updateModulation(modulationBuffer, rayBuffer, surfelBuffer, numPixels, multithreading);
 
-            writeToImage(image, biradianceBuffer, lightShadowedBuffer, surfelBuffer, multithreading);
+            writeToImage(image, biradianceBuffer, lightShadowedBuffer, modulationBuffer, multithreading);
         }
     }
 }
 
-void RayTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const bool& multithreading) const {
+void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const {
     int width = image->width();
     int height = image->height();
 
@@ -98,27 +91,27 @@ void RayTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradia
 
 
 
-void RayTracer::updateModulation(Array<Color3>& modulationBuffer, const int& numPixels, const bool& multithreading) const {
+void PathTracer::updateModulation(Array<Color3>& modulationBuffer, Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const {
     Thread::runConcurrently(0, numPixels, [&](int i) {
 
     }, !multithreading);
 }
 
-void RayTracer::generateRecursiveRays(Array<Ray>& rayBuffer, const int& numPixels, const bool& multithreading) const {
-    Thread::runConcurrently(0, numPixels, [&](int i) {
-
-    }, !multithreading);
-}
-
-
-void RayTracer::testVisibility(const Array<Ray>& shadowRayBuffer, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const {
+void PathTracer::generateRecursiveRays(Array<Ray>& rayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const {
     Thread::runConcurrently(0, numPixels, [&](int i) {
 
     }, !multithreading);
 }
 
 
-void RayTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const {
+void PathTracer::testVisibility(const Array<Ray>& shadowRayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const {
+    Thread::runConcurrently(0, numPixels, [&](int i) {
+
+    }, !multithreading);
+}
+
+
+void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const {
 
     // Calculate biradiance from each light source
     Thread::runConcurrently(0, numPixels, [&](int i) {
@@ -166,19 +159,19 @@ void RayTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const A
 }
 
 
-void RayTracer::generateRays(Array<Ray>& rayBuffer, const shared_ptr<Scene>& scene, const int& width, const int& height, const bool& multithreading) const {
+void PathTracer::generateRays(Array<Ray>& rayBuffer, const int& width, const int& height, const bool& multithreading) const {
     Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
         // TODO bump these around a bit
-        Ray ray = scene->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(width, height)));
+        Ray ray = m_scene->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(width, height)));
         rayBuffer[coord.x * coord.y + coord.x] = ray;
     }, !multithreading);
 }
 
 
 
-void RayTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const {
+void PathTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const {
     // Find intersection
-    tris.intersectRays(rayBuffer, surfelBuffer);
+    m_tris.intersectRays(rayBuffer, surfelBuffer);
 
     //Thread::runConcurrently(0, numPixels, [&](int i) {
     //    const shared_ptr<Surfel>& surfel = tris.intersectRay(rayBuffer[i]);
@@ -199,10 +192,10 @@ void RayTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr
 
 
 
-Radiance3 RayTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft, const bool isEyeRay) const {
+Radiance3 PathTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft, const bool isEyeRay) const {
 
     // Find intersection between ray and scene
-    const shared_ptr<Surfel> surfel = tris.intersectRay(ray);
+    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
 
     if (notNull(surfel)) {
         Radiance3 emittedLight = surfel->emittedRadiance(-ray.direction());
@@ -219,6 +212,7 @@ Radiance3 RayTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& light
 
                     Ray recursiveRay(bumpedPoint, direction);
                     const Color3 scatter = surfel->finiteScatteringDensity(recursiveRay.direction(), -ray.direction());
+
                     const Radiance3 recursion = trace(recursiveRay, lightArray, indirectCount, recursionsLeft - 1, false);
                     indirectLight += recursion * scatter / indirectCount;
                 }
@@ -236,7 +230,7 @@ Radiance3 RayTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& light
 }
 
 
-Radiance3 RayTracer::getDirectLight(const Ray& ray,
+Radiance3 PathTracer::getDirectLight(const Ray& ray,
     const shared_ptr<Surfel>& surfel,
     const Array<shared_ptr<Light>>& lightArray) const {
 
@@ -271,11 +265,11 @@ Radiance3 RayTracer::getDirectLight(const Ray& ray,
 
 
 
-bool RayTracer::isLightVisible(const Ray ray, const shared_ptr<Light> light) const {
+bool PathTracer::isLightVisible(const Ray ray, const shared_ptr<Light> light) const {
 
     if (!light->castsShadows()) return true;
 
-    const shared_ptr<Surfel> surfel = tris.intersectRay(ray);
+    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
 
     if (notNull(surfel)) {
         const float intersectDist = (surfel->position - ray.origin()).squaredLength();

@@ -4,7 +4,7 @@
     <ClCompile Include="source\App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\RayTracer.cpp">
+    <ClCompile Include="source\PathTracer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -12,7 +12,7 @@
     <ClInclude Include="source\App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\RayTracer.h">
+    <ClInclude Include="source\PathTracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

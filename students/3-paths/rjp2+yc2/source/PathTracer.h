@@ -5,14 +5,15 @@
     Performs ray tracing on the given ray, looking through all surfaces in the scene.
 */
 
-class RayTracer {
+class PathTracer {
 protected:
 
     /** Handling for float precision and ray bump */
     const float EPSILON = 0.0001f;
 
     /** TriTree used to iterate through all triangles in the scene */
-    //TriTree tris;
+    TriTree m_tris;
+    shared_ptr<Scene> m_scene;
     //Array<shared_ptr<Light>> lights;
 
 
@@ -29,37 +30,70 @@ protected:
     Radiance3 getDirectLight(const Ray& ray, const shared_ptr<Surfel>& surfel, const Array<shared_ptr<Light>>& lightArray) const;
 
 
+        /***
+       Pre: Scene and image size
+       Post: rayBuffer will be filled with one ray for each pixel in the image
+    */
+    void PathTracer::generateRays(Array<Ray>& rayBuffer, const int& width, const int& height, const bool& multithreading) const;
+
+
+     /***
+       Pre: Filled rayBuffer and image size
+       Post: surfelBuffer will have one intersected surfel for each pixel
+    */
+    void traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+
+     /***
+       Pre: Filled lightArray, filled surfelBuffer and image size
+       Post: biradianceBuffer filled for each pixel, shadowRayBuffer filled for each pixel
+    */
+    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const;
+
+    /***
+       Pre: Filled shadowRayBuffer, filled surfelBuffer
+       Post: lightShadowedBuffer contaning whether light is visible for each pixel
+    */
+    void testVisibility(const Array<Ray>& shadowRayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const;
+    
+     /***
+       Pre: Filled surfelBuffer
+       Post: filled rayBuffer with one recursive ray for each pixel
+    */
+    void generateRecursiveRays(Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+
+     /***
+       Pre: Filled rayBuffer, filled surfelBuffer
+       Post: updated modulationBuffer constianing new scattering weight for each pixel
+    */
+    void updateModulation(Array<Color3>& modulationBuffer, Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+
+    /***
+       Pre: Filled rayBuffer, filled biradianceBuffer, filled lightShadowedBuffer
+       Post: Weighted biradiance data added to each pixel
+    */
+    void writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const;
+
 
 public:
 
-    void renderScene(const shared_ptr<Scene>& scene, const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1) const;
+    /** Constructor */
+    PathTracer(shared_ptr<Scene> scene);
 
-    void RayTracer::generateRays(Array<Ray>& rayBuffer, const shared_ptr<Scene>& scene,  const int& width, const int& height, const bool& multithreading) const;
+    void setScene(shared_ptr<Scene> scene);
+    
 
-    void traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
-
-    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, const Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const;
-
-    void testVisibility(const Array<Ray>& shadowRayBuffer, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const;
- 
-    void generateRecursiveRays(Array<Ray>& rayBuffer, const int& numPixels, const bool& multithreading) const;
-
-    void updateModulation(Array<Color3>& modulationBuffer, const int& numPixels, const bool& multithreading) const;
-
-    void writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const bool& multithreading) const;
+    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1) const;
 
 
 
-       /** Main ray tracing method. Finds radiance along ray coming from first intersecting object (looped over).
+     /** Main ray tracing method. Finds radiance along ray coming from first intersecting object (looped over).
         Sums L_lights and recursive trace at location to find radiance
     */
     virtual Radiance3 trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft = 0, const bool isEyeRay = true) const;
 
-
-    /** Constructor */
-    //RayTracer(Array<shared_ptr<Surface>> surfaces);
-    RayTracer();
+   
 };
+
 
 
 

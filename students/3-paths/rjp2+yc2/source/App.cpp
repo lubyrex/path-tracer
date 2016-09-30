@@ -1,6 +1,6 @@
 /** \file App.cpp */
 #include "App.h"
-#include "RayTracer.h"
+#include "PathTracer.h"
 
 // Tells C++ to invoke command-line main() function even on OS X and Win32.
 G3D_START_AT_MAIN();
@@ -91,8 +91,8 @@ void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
 
     StopWatch stopWatch = Stopwatch();
-    RayTracer tracer = RayTracer();
-    tracer.renderScene(scene(), image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
+    PathTracer tracer = PathTracer(scene());
+    tracer.renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
 
     // Show / save raw image 
     // Set window caption to amount of time rendering took (not including data structure initialization)
