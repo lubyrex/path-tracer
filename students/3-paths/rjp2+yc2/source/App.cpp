@@ -88,11 +88,9 @@ void App::message(const String& msg) const {
 
 
 void App::onRender(shared_ptr<Image> &image) {
-
     message("Rendering...");
 
     StopWatch stopWatch = Stopwatch();
-
     RayTracer tracer = RayTracer();
     tracer.renderScene(scene(), image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
 
@@ -111,12 +109,9 @@ void App::onRender(shared_ptr<Image> &image) {
     m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
     resultTexture->toImage()->save("result.png");
 
-
     //if (m_resultTexture) {
     //    m_resultTexture->resize(image->width(), image->height());
     //};
-
-
 }
 
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
