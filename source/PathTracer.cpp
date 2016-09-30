@@ -140,10 +140,11 @@ void PathTracer::testVisibility(const Array<Ray>& shadowRayBuffer, const Array<s
         if (notNull(chosenSurfel) && isNull(intersectedSurfel)) {
             printf("h");        }
 
-        if (isNull(chosenSurfel) || isNull(intersectedSurfel)) {
+        if (isNull(chosenSurfel)) {
             lightShadowedBuffer[i] = true;
-        }
-        else {
+        } else if (isNull(intersectedSurfel)) {
+            lightShadowedBuffer[i] = false;
+        } else {
             // Calculate distances
             const float intersectDist = (intersectedSurfel->position - shadowRay.origin()).squaredLength();
             const float chosenDist = (chosenSurfel->position - shadowRay.origin()).squaredLength();
