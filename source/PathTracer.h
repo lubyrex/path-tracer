@@ -56,22 +56,22 @@ protected:
     void testVisibility(const Array<Ray>& shadowRayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const;
     
      /***
-       Pre: Filled surfelBuffer
-       Post: filled rayBuffer with one recursive ray for each pixel
+       Pre: Filled rayBuffer, and filled surfelBuffer
+       Post: filled rayBuffer with one recursive ray for each pixel, and updated modulationBuffer
     */
-    void generateRecursiveRays(Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+    void generateRecursiveRays(Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
 
      /***
        Pre: Filled rayBuffer, filled surfelBuffer
        Post: updated modulationBuffer constianing new scattering weight for each pixel
     */
-    void updateModulation(Array<Color3>& modulationBuffer, Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+    //void updateModulation(Array<Color3>& modulationBuffer, Array<Ray>& rayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
 
     /***
        Pre: Filled rayBuffer, filled biradianceBuffer, filled lightShadowedBuffer
        Post: Weighted biradiance data added to each pixel
     */
-    void writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const;
+    void writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const Array<Ray>& shadowRayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const;
 
 
 public:

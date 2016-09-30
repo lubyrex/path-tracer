@@ -117,14 +117,14 @@ void App::onRender(shared_ptr<Image> &image) {
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
 void App::addRenderGUI() {
 
-    shared_ptr<GuiWindow> renderWindow = GuiWindow::create("Render", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 0), GuiTheme::TOOL_WINDOW_STYLE);
+    shared_ptr<GuiWindow> renderWindow = GuiWindow::create("Render", debugWindow->theme(), Rect2D::xywh(1025, 175, 0, 50), GuiTheme::TOOL_WINDOW_STYLE);
     GuiPane* renderPane = renderWindow->pane();
 
     Array<String> resolutionOptions = { "1x1", "320x200", "640x400" };
 
     renderPane->addDropDownList("Resolution", resolutionOptions, &m_resolutionChoice);
-    renderPane->addNumberBox("Rays Per Pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
-    renderPane->addNumberBox("Scattering Events", &m_scatteringEvents, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
+    renderPane->addNumberBox("Rays Per Pixel", &m_raysPerPixel, "", GuiTheme::LINEAR_SLIDER, 1, 2048, 1);
+    renderPane->addNumberBox("Scatters", &m_scatteringEvents, "", GuiTheme::LINEAR_SLIDER, 0, 2048, 1);
     renderPane->addCheckBox("Multithreading", &m_multiThreading);
 
     renderPane->addButton("Render", [&]() {

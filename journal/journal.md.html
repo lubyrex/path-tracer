@@ -1,8 +1,38 @@
 ﻿                  <meta charset="utf-8">
                  **Development Journal**
 
-Porting Code
-=====================================================
+Changed scatter function to not use Russian Roulette
+=============================================================
+
+![](2016-09-30_002_3-paths_r1159_g3d_r875__.jpg)
+
+
+
+Fixed CheckVisibility to correctly return when surfel is null
+=============================================================
+
+
+
+
+Put Image Writing before modulationBuffer Updating
+=============================================================
+
+![](2016-09-30_001_3-paths_r1159_g3d_r875__.jpg)
+
+
+
+What in the world happened
+=============================================================
+
+![](2016-09-30_000_3-paths_r1159_g3d_r875__.jpg)
+
+
+
+Shadow Ray isn;t intersecting anything, why???
+==========================================
+
+For some reason. our shadow rays (from the light to the surfel) aren't intersecting anything, which doesnt make any sense.
+For now will just check for that happening, but am very confused as to why.
 
 
 
@@ -27,12 +57,12 @@ Workflow
  -------------------------|-----------------------------------------------------------------|--------------:|------------:
   Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     1.50      |  1.5
   Report Draft (Prep)     | Formatted Markdeep document with placeholder text.              |     0.75      |  0.75
-  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |     
-  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  
-  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  
-  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |   
-  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  
-  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  
+  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |  0.0 
+  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  0.0
+  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  0.5
+  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |  0.5
+  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  0.5
+  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  2.0
   Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |
   Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |
   UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  
