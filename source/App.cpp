@@ -100,14 +100,14 @@ void App::onRender(shared_ptr<Image> &image) {
     String caption = (String)("Time: " + std::to_string(time));
     debugPrintf("%s\n", caption);
     show(image, caption);
-    image->save("CustomScene.png");
+    //image->save("CustomScene.png");
 
     // Post-process image
     // Why does the saved image look so weird???
-    const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
-    shared_ptr<Texture> resultTexture;
-    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
-    resultTexture->toImage()->save("result.png");
+    //const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
+   // shared_ptr<Texture> resultTexture;
+   // m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
+   // resultTexture->toImage()->save("result.png");
 
     //if (m_resultTexture) {
     //    m_resultTexture->resize(image->width(), image->height());
@@ -131,11 +131,11 @@ void App::addRenderGUI() {
         shared_ptr<Image> image;
         try {
             switch (m_resolutionChoice) {
-            case 0:image = (Image::create(1, 1, ImageFormat::RGB8()));
+            case 0:image = (Image::create(1, 1, ImageFormat::RGB32F()));
                 break;
-            case 1:image = (Image::create(320, 200, ImageFormat::RGB8()));
+            case 1:image = (Image::create(320, 200, ImageFormat::RGB32F()));
                 break;
-            case 2:image = (Image::create(640, 400, ImageFormat::RGB8()));
+            case 2:image = (Image::create(640, 400, ImageFormat::RGB32F()));
                 break;
             }
         }

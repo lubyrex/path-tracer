@@ -1,6 +1,42 @@
 ﻿                  <meta charset="utf-8">
                  **Development Journal**
 
+
+
+Also seem to have inconsistencies with which are bumping point for recursive rays but works better for what seems to be the wrong way
+=============================================================
+
+are bumping by (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionIn))));
+
+Seems like should be (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(directionIn))));
+
+
+Can't figure out why our images get so dark
+=============================================================
+
+
+
+Turning up the rays doesnt change the fact that the faces not touched by direct light are always black, which indicates our direct rays arent working well
+=============================================================
+
+![Turning up the rays doesnt change the fact that the faces not touched by direct light are always black, which indicates our direct rays arent working well](2016-10-01_002_3-paths_r1171_g3d_r875__Turning_up_the_rays_doesnt_change_the_fact_that_the_faces_not_touched_by_direct_light_are_always_black__which_indicates_our_direct_rays_arent_working_well.jpg)
+
+
+
+When you stop multiplying the modulation buffer by the 'weight' we have normal levels of light
+=============================================================
+
+![](2016-10-01_001_3-paths_r1171_g3d_r875__.jpg)
+
+
+
+Image  gets very dark when we increase number of rays per pixel
+=============================================================
+
+![](2016-10-01_000_3-paths_r1171_g3d_r875__.jpg)
+
+
+
 2016-09-30: fixed a bug in coordinates
 =============================================================
 
@@ -79,7 +115,7 @@ Workflow
   Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |   
   Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      | 
   Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |
-  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    | 
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    |  1.2
   Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  
  [Project Workflow Planning Table.]
 
