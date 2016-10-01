@@ -82,7 +82,7 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
     int height = image->height();
 
     Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
-        int i = coord.x * coord.y + coord.x;
+        int i = coord.y * width + coord.x;
         const Point2int32 pixel = Point2int32(coord.x, coord.y);
         Radiance3 radiance;
         image->get(pixel, radiance);
@@ -208,7 +208,7 @@ void PathTracer::generateRays(Array<Ray>& rayBuffer, const int& width, const int
     Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
         // TODO bump these around a bit
         Ray ray = m_scene->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(width, height)));
-        rayBuffer[coord.x * coord.y + coord.x] = ray;
+        rayBuffer[width * coord.y + coord.x] = ray;
     }, !multithreading);
 }
 
