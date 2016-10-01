@@ -53,6 +53,7 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
     for (int i = 0; i < raysPerPixel; ++i) {
         // Generate all rays
         generateRays(rayBuffer, width, height, multithreading);
+        modulationBuffer.setAll(Color3(1 / (float)raysPerPixel));
 
         // Iterate over num scattering events
         for (int j = 0; j < scatteringEvents + 1; ++j) {
@@ -67,6 +68,24 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
 
                 // Test whether lights are actually visible
                 testVisibility(shadowRayBuffer, surfelBuffer, lightShadowedBuffer, numPixels, multithreading);
+
+
+                //if you wanna uncomment this to test
+                //Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
+                //    int i = coord.y * width + coord.x;
+                //    const Point2int32 pixel = Point2int32(coord.x, coord.y);
+
+                //    if (!lightShadowedBuffer[i]) {
+
+                //        const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(-rayBuffer[i].direction());
+                //        const Radiance3& directLight = biradianceBuffer[i];
+                //        Color3 scatteringDensity = surfelBuffer[i]->finiteScatteringDensity(-shadowRayBuffer[i].direction(), -rayBuffer[i].direction());
+
+                //            Radiance3 radiance = emittedLight ;
+                //     image->increment(pixel, radiance);
+                //     }
+                // }, !multithreading);
+
             }
 
             writeToImage(image, biradianceBuffer, lightShadowedBuffer, shadowRayBuffer, surfelBuffer, rayBuffer, modulationBuffer, multithreading);
@@ -91,7 +110,8 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
             const Radiance3& directLight = biradianceBuffer[i];
             Color3 scatteringDensity = surfelBuffer[i]->finiteScatteringDensity(-shadowRayBuffer[i].direction(), -rayBuffer[i].direction());
 
-            Radiance3 radiance = emittedLight + (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));
+            Radiance3 radiance =emittedLight + (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));
+           /* Radiance3 radiance =  (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));*/
 
             image->increment(pixel, radiance);
         }
@@ -118,7 +138,7 @@ void PathTracer::generateRecursiveRays(Array<Ray>& rayBuffer, Array<Color3>& mod
             rayBuffer[i] = Ray(bumpedPoint, -directionIn);
 
             // Store modulation?
-            //modulationBuffer[i] = weight * modulationBuffer[i];
+            modulationBuffer[i] = weight * modulationBuffer[i];
         }
         //const Color3 scatter = surfel->finiteScatteringDensity(recursiveRay.direction(), -ray.direction());
     }, !multithreading);
@@ -154,6 +174,7 @@ void PathTracer::testVisibility(const Array<Ray>& shadowRayBuffer, const Array<s
         }
 
     }, !multithreading);
+
 }
 
 
