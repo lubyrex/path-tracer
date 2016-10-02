@@ -13,9 +13,12 @@ protected:
 
     // Variables for render GUI
     bool m_multiThreading = true;
-    int m_raysPerPixel = 5;
-    int m_scatteringEvents = 1;
+    int m_raysPerPixel = 1;
+    int m_scatteringEvents = 0;
     int m_resolutionChoice = 1;
+
+    // Path tracer
+    //PathTracer m_pathTracer;
 
     /** Called by GUI to load a scene image. Invokes ray tracing performed by RayTracer class */
     void onRender(shared_ptr<Image> &image);
@@ -23,15 +26,9 @@ protected:
     /** Called from onInit */
     void makeGUI();
 
-
     void addRenderGUI();
 
     void message(const String& msg) const;
-
-    // object generation methods
-    //void generateCylinder(int radius, int height, bool hollow);
-    //void generateHeightField(float yScale, float xzScale, shared_ptr<Image> image);
-    //void generateDrinkingGlass(int numSlices);
 
 public:
 

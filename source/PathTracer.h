@@ -16,6 +16,8 @@ protected:
     shared_ptr<Scene> m_scene;
     //Array<shared_ptr<Light>> lights;
 
+    RealTime m_lastTreeBuildTime;
+
 
 
         /**
@@ -41,25 +43,25 @@ protected:
        Pre: Filled rayBuffer and image size
        Post: surfelBuffer will have one intersected surfel for each pixel
     */
-    void traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+    void traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const bool& multithreading) const;
 
      /***
        Pre: Filled lightArray, filled surfelBuffer and image size
        Post: biradianceBuffer filled for each pixel, shadowRayBuffer filled for each pixel
     */
-    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const int& numPixels, const bool& multithreading) const;
+    void chooseLights(const Array<shared_ptr<Light>>& lightArray, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Biradiance3>& biradianceBuffer, Array<Ray>& shadowRayBuffer, const bool& multithreading) const;
 
     /***
        Pre: Filled shadowRayBuffer, filled surfelBuffer
        Post: lightShadowedBuffer contaning whether light is visible for each pixel
     */
-    void testVisibility(const Array<Ray>& shadowRayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const int& numPixels, const bool& multithreading) const;
+    void testVisibility(const Array<Ray>& shadowRayBuffer,  const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const bool& multithreading) const;
     
      /***
        Pre: Filled rayBuffer, and filled surfelBuffer
        Post: filled rayBuffer with one recursive ray for each pixel, and updated modulationBuffer
     */
-    void generateRecursiveRays(Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const int& numPixels, const bool& multithreading) const;
+    void generateRecursiveRays(Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, const bool& multithreading) const;
 
      /***
        Pre: Filled rayBuffer, filled surfelBuffer
@@ -77,12 +79,12 @@ protected:
 public:
 
     /** Constructor */
-    PathTracer(shared_ptr<Scene> scene);
+    PathTracer(shared_ptr<Scene> scene = nullptr);
 
     void setScene(shared_ptr<Scene> scene);
     
 
-    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1) const;
+    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1);
 
 
 

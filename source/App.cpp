@@ -73,6 +73,8 @@ void App::onInit() {
         "G3D Cornell Box");
     //developerWindow->sceneEditorWindow->selectedScend
 
+    // Is this necessary to initialize?
+     //m_pathTracer;
 }
 
 void App::message(const String& msg) const {
@@ -90,28 +92,32 @@ void App::message(const String& msg) const {
 void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
 
-    StopWatch stopWatch = Stopwatch();
+    StopWatch stopWatch;
     PathTracer tracer = PathTracer(scene());
+    //tracer.setScene(scene());
     tracer.renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
 
     // Show / save raw image 
     // Set window caption to amount of time rendering took (not including data structure initialization)
     double time = stopWatch.elapsedTime();
-    String caption = (String)("Time: " + std::to_string(time));
-    debugPrintf("%s\n", caption);
+    const String& caption = format("Time: %fs", time);
+    debugPrintf("%s\n", caption.c_str());
     show(image, caption);
     //image->save("CustomScene.png");
 
     // Post-process image
     // Why does the saved image look so weird???
-    //const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
-   // shared_ptr<Texture> resultTexture;
-   // m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
+    const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
+    shared_ptr<Texture> resultTexture;
+    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
+    //show(resultTexture);
    // resultTexture->toImage()->save("result.png");
 
     //if (m_resultTexture) {
     //    m_resultTexture->resize(image->width(), image->height());
     //};
+
+    // m_film->exposeAndRender(rd, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x);
 }
 
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
@@ -142,7 +148,6 @@ void App::addRenderGUI() {
         catch (...) {
             msgBox("Unable to render the image.");
         }
-
         onRender(image);
 
         ArticulatedModel::clearCache();
@@ -181,6 +186,8 @@ void App::makeGUI() {
 
     addRenderGUI();
 }
+
+
 
 
 // This default implementation is a direct copy of GApp::onGraphics3D to make it easy

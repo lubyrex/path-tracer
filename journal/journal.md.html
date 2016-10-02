@@ -2,6 +2,33 @@
                  **Development Journal**
 
 
+2016-10-02: ???
+=============================================================
+
+![Speckling might indicate bumping problems](2016-10-02_002_3-paths_r1214_g3d_r875__Speckling_might_indicate_bumping_problems.jpg)
+
+
+
+2016-10-02: ???
+=============================================================
+
+![Now making shadowRays with max distances so can correctly check visibility](2016-10-02_001_3-paths_r1214_g3d_r875__Now_making_shadowRays_with_max_distances_so_can_correctly_check_visibility.jpg)
+
+
+
+2016-10-02: ???
+=============================================================
+
+![Changed Visibility check to use TriTree:IntersectRays](2016-10-02_000_3-paths_r1214_g3d_r875__Changed_Visibility_check_to_use_TriTree_IntersectRays.jpg)
+
+
+
+Bug Found: weren't resetting modulation buffer before each raysPerPixel iteration
+=============================================================
+Found thanks to Morgan
+
+
+
 2016-10-01:
 =============================================================
 
@@ -55,13 +82,14 @@ Image  gets very dark when we increase number of rays per pixel
 
 
 
-2016-09-30: fixed a bug in coordinates
+2016-09-30: Iteration Bug fixed
 =============================================================
 
 ![](2016-09-30_003_3-paths_r1164_g3d_r875__.jpg)
 
 we were using x*y + x instead of x*width + x for the i value that iterates
 through our loop
+
 
 
 
