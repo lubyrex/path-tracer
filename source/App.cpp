@@ -88,6 +88,59 @@ void App::message(const String& msg) const {
     renderDevice->swapBuffers();
 }
 
+void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma) {
+    image->convert(ImageFormat::RGB8());
+
+
+    const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
+    shared_ptr<Texture> resultTexture;
+    show(image);
+    
+    image->save(name);
+
+//    Array<shared_ptr<Camera>> cameras;
+//    scene()->getTypedEntityArray<Camera>(cameras);
+//    for (int i = 0; i < cameras.length(); ++i) {
+//        shared_ptr<Camera> c = cameras[i];
+//        FilmSettings& f = c->filmSettings();
+//        f.setGamma(gamma);
+//    }
+//    m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+//    resultTexture->toImage()->save("eyeRayTest.png");
+//    show(resultTexture);
+}
+
+void App::runTests1() {
+
+    PathTracer tracer = PathTracer(scene());
+    StopWatch stopWatch;
+
+    // Eye ray directions
+    tracer.m_eyeRayTest = true;
+    shared_ptr<Image> eyeRay = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(eyeRay, stopWatch);
+    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4);
+    tracer.m_eyeRayTest = false;
+
+    // hit positions
+    tracer.m_hitsTest = true;
+    shared_ptr<Image> hits = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(hits, stopWatch);
+    processAndSaveImage(hits, "hitsTest.png", 4.4);
+    tracer.m_hitsTest = false;
+
+    // geo normals
+    tracer.m_geoNormalsTest = true;
+    shared_ptr<Image> geoNormals = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(geoNormals, stopWatch);
+    processAndSaveImage(geoNormals, "normalsTest.png", 2.2);
+    tracer.m_geoNormalsTest = false;
+}
+
+void App::runTests2() {
+
+}
+
 
 void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
@@ -95,6 +148,7 @@ void App::onRender(shared_ptr<Image> &image) {
     StopWatch stopWatch;
     PathTracer tracer = PathTracer(scene());
     //tracer.setScene(scene());
+    //tracer.m_eyeRayTest = true;
     tracer.renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
 
     // Show / save raw image 
@@ -103,21 +157,23 @@ void App::onRender(shared_ptr<Image> &image) {
     const String& caption = format("Time: %fs", time);
     debugPrintf("%s\n", caption.c_str());
     show(image, caption);
-    //image->save("CustomScene.png");
+    image->convert(ImageFormat::RGB8());
+    image->save("eyeRayTest.png");
 
     // Post-process image
     // Why does the saved image look so weird???
     const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
     shared_ptr<Texture> resultTexture;
-    m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
+    //m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+    // m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
     //show(resultTexture);
-   // resultTexture->toImage()->save("result.png");
+    // resultTexture->toImage()->save("result.png");
 
-    //if (m_resultTexture) {
-    //    m_resultTexture->resize(image->width(), image->height());
-    //};
+     //if (m_resultTexture) {
+     //    m_resultTexture->resize(image->width(), image->height());
+     //};
 
-    // m_film->exposeAndRender(rd, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x);
+     // m_film->exposeAndRender(rd, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x);
 }
 
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
@@ -137,11 +193,11 @@ void App::addRenderGUI() {
         shared_ptr<Image> image;
         try {
             switch (m_resolutionChoice) {
-            case 0:image = (Image::create(1, 1, ImageFormat::RGB32F()));
+            case 0:image = (Image::create(1280, 720, ImageFormat::RGB32F()));
                 break;
-            case 1:image = (Image::create(320, 200, ImageFormat::RGB32F()));
+            case 1:image = (Image::create(320, 200, ImageFormat::RGB8()));
                 break;
-            case 2:image = (Image::create(640, 400, ImageFormat::RGB32F()));
+            case 2:image = (Image::create(640, 400, ImageFormat::RGB8()));
                 break;
             }
         }
@@ -149,6 +205,7 @@ void App::addRenderGUI() {
             msgBox("Unable to render the image.");
         }
         onRender(image);
+        //runTests1();
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());

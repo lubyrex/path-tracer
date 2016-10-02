@@ -100,6 +100,7 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
             generateRecursiveRays(rayBuffer, modulationBuffer, surfelBuffer, multithreading);
         }
     }
+     stopWatch.tock();
 }
 
 void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const Array<Ray>& shadowRayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const {
@@ -110,15 +111,25 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
         int i = coord.y * width + coord.x;
         const Point2int32 pixel = Point2int32(coord.x, coord.y);
 
-        if (notNull(surfelBuffer[i]) && !lightShadowedBuffer[i]) {
-
-            const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(-rayBuffer[i].direction());
-            const Radiance3& directLight = biradianceBuffer[i];
-            Color3 scatteringDensity = surfelBuffer[i]->finiteScatteringDensity(-shadowRayBuffer[i].direction(), -rayBuffer[i].direction());
-
-            Radiance3 radiance = emittedLight + (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));
-
+        if (m_eyeRayTest) {
+            Vector3 r = rayBuffer[i].direction();
+            Radiance3 radiance = Radiance3(r.x + 1, r.y + 1, r.z + 1) / 2.0f;
             image->increment(pixel, radiance);
+        }
+        else if (false) {
+
+        }
+        else {
+            if (notNull(surfelBuffer[i]) && !lightShadowedBuffer[i]) {
+
+                const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(-rayBuffer[i].direction());
+                const Radiance3& directLight = biradianceBuffer[i];
+                Color3 scatteringDensity = surfelBuffer[i]->finiteScatteringDensity(-shadowRayBuffer[i].direction(), -rayBuffer[i].direction());
+
+                Radiance3 radiance = emittedLight + (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));
+
+                image->increment(pixel, radiance);
+            }
         }
     }, !multithreading);
 }

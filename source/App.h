@@ -30,6 +30,11 @@ protected:
 
     void message(const String& msg) const;
 
+    void runTests1();
+    void runTests2();
+
+    void processAndSaveImage(shared_ptr<Image> image, String name, float gamma);
+
 public:
 
     App(const GApp::Settings& settings = GApp::Settings());

@@ -18,8 +18,6 @@ protected:
 
     RealTime m_lastTreeBuildTime;
 
-
-
         /**
             checks if individual light is illuminating point using intersection
             called from getDirectLight
@@ -78,13 +76,18 @@ protected:
 
 public:
 
+      bool m_eyeRayTest = false;
+      bool m_hitsTest = false;
+      bool m_geoNormalsTest = false;
+      
+
     /** Constructor */
     PathTracer(shared_ptr<Scene> scene = nullptr);
 
     void setScene(shared_ptr<Scene> scene);
     
 
-    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 5, bool multithreading = true, int scatteringEvents = 1);
+    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 1, bool multithreading = true, int scatteringEvents = 0);
 
 
 
