@@ -88,16 +88,21 @@ void App::message(const String& msg) const {
     renderDevice->swapBuffers();
 }
 
-void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma) {
+void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma,Stopwatch watch) {
     image->convert(ImageFormat::RGB8());
 
 
     const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
     shared_ptr<Texture> resultTexture;
-    show(image);
+    
     
     image->save(name);
-
+    double time = watch.elapsedTime();
+    const String& caption = format("Time: %fs", time);
+    debugPrintf("%s\n", caption.c_str());
+    show(image, caption);
+    
+   
 //    Array<shared_ptr<Camera>> cameras;
 //    scene()->getTypedEntityArray<Camera>(cameras);
 //    for (int i = 0; i < cameras.length(); ++i) {
@@ -112,35 +117,127 @@ void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma)
 
 void App::runTests1() {
 
-    PathTracer tracer = PathTracer(scene());
+    PathTracer tracer(scene());
     StopWatch stopWatch;
 
     // Eye ray directions
+    stopWatch.reset();
     tracer.m_eyeRayTest = true;
     shared_ptr<Image> eyeRay = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(eyeRay, stopWatch);
-    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4);
+    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4,stopWatch);
     tracer.m_eyeRayTest = false;
 
     // hit positions
+    stopWatch.reset();
     tracer.m_hitsTest = true;
     shared_ptr<Image> hits = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(hits, stopWatch);
-    processAndSaveImage(hits, "hitsTest.png", 4.4);
+    processAndSaveImage(hits, "hitsTest.png", 4.4,stopWatch);
     tracer.m_hitsTest = false;
 
     // geo normals
+    stopWatch.reset();
     tracer.m_geoNormalsTest = true;
     shared_ptr<Image> geoNormals = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(geoNormals, stopWatch);
-    processAndSaveImage(geoNormals, "normalsTest.png", 2.2);
+    processAndSaveImage(geoNormals, "normalsTest.png", 2.2,stopWatch);
     tracer.m_geoNormalsTest = false;
 }
 
 void App::runTests2() {
+    PathTracer tracer(scene());
+    StopWatch stopWatch;
+    //ArticulatedModel::clearCache();
+
+    
+    scene()->load("G3D Cornell Box");
+    tracer.setScene(scene());
+    stopWatch.reset();
+    shared_ptr<Image> cornell = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(cornell, stopWatch,1,true,1);
+    processAndSaveImage(cornell, "Cornell.png", 4.4,stopWatch);
+
+    
+    stopWatch.reset();
+    scene()->load("G3D Cornell Box (Spheres)");
+    tracer.setScene(scene());
+    shared_ptr<Image> sphere = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sphere, stopWatch,128,true,1);
+    processAndSaveImage(sphere, "Sphere.png", 4.4,stopWatch);
+
+    stopWatch.reset();
+    shared_ptr<Image> sphere2 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sphere2, stopWatch,128,true,1);
+    processAndSaveImage(sphere2, "Sphere2.png", 4.4,stopWatch);
+
+   stopWatch.reset();
+    shared_ptr<Image> sphere3 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sphere3, stopWatch,128,true,1);
+    processAndSaveImage(sphere3, "Sphere3.png", 4.4,stopWatch);
+
+   stopWatch.reset();
+    shared_ptr<Image> sphere4 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sphere4, stopWatch,128,true,1);
+    processAndSaveImage(sphere4, "Sphere4.png", 4.4,stopWatch);
+
+   stopWatch.reset();
+    shared_ptr<Image> sphere10 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sphere10, stopWatch,128,true,1);
+    processAndSaveImage(sphere10, "Sphere5.png", 4.4,stopWatch);
 
 }
 
+void App::runTests3() {
+    PathTracer tracer(scene());
+    StopWatch stopWatch;
+    //ArticulatedModel::clearCache();
+
+    
+    scene()->load("G3D Sponza");
+    tracer.setScene(scene());
+    shared_ptr<Image> sponza = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza, stopWatch,1,true,1);
+    processAndSaveImage(sponza, "Sponza.png", 4.4,stopWatch);
+
+    
+    stopWatch.reset();
+    shared_ptr<Image> sponza2 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza2, stopWatch,1,true,2);
+    processAndSaveImage(sponza2, "Sponza2.png", 4.4,stopWatch);
+
+    stopWatch.reset();
+    shared_ptr<Image> sponza3 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza3, stopWatch,1,true,3);
+    processAndSaveImage(sponza3, "Sponza3.png", 4.4,stopWatch);
+
+     stopWatch.reset();
+    shared_ptr<Image> sponza4 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza4, stopWatch,1,true,4);
+    processAndSaveImage(sponza4, "Sponza4.png", 4.4,stopWatch);
+
+    stopWatch.reset();
+    shared_ptr<Image> sponza5 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza5, stopWatch,4,true,1);
+    processAndSaveImage(sponza5, "Sponza5.png", 4.4,stopWatch);
+
+    stopWatch.reset();
+    shared_ptr<Image> sponza6 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza6, stopWatch,16,true,1);
+    processAndSaveImage(sponza6, "Sponza6.png", 4.4,stopWatch);
+    
+    stopWatch.reset();
+    shared_ptr<Image> sponza7 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza7, stopWatch,256,true,1);
+    processAndSaveImage(sponza7, "Sponza7.png", 4.4,stopWatch);
+
+     stopWatch.reset(); 
+    shared_ptr<Image> sponza8 = Image::create(320, 200, ImageFormat::RGB32F());
+    tracer.renderScene(sponza8, stopWatch,1024,true,1);
+    processAndSaveImage(sponza8, "Sponza8.png", 4.4,stopWatch);
+
+   
+}
 
 void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
@@ -205,7 +302,7 @@ void App::addRenderGUI() {
             msgBox("Unable to render the image.");
         }
         onRender(image);
-        //runTests1();
+        runTests3();
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());
