@@ -121,8 +121,19 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
             Radiance3 radiance = Radiance3(r.x + 1, r.y + 1, r.z + 1) / 2.0f;
             image->increment(pixel, radiance);
         }
-        else if (false) {
+        else if (m_hitsTest) {
+            if(notNull(surfelBuffer[i])){
+            Point3 p = surfelBuffer[i]->position;
+            Radiance3 radiance = Radiance3(p.x*0.3 + 0.5, p.y*0.3 + 0.5, p.z*0.3 + 0.5);
+            image->increment(pixel, radiance);
+            }
+        } else if(m_geoNormalsTest){
+            if(notNull(surfelBuffer[i])){
 
+            Point3 n = surfelBuffer[i]->geometricNormal;
+            Radiance3 radiance = Radiance3(n.x + 1, n.y + 1, n.z + 1)/2.0f;
+            image->increment(pixel, radiance);
+            }
         }
         else {
 

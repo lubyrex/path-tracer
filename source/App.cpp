@@ -70,7 +70,7 @@ void App::onInit() {
     // developerWindow->videoRecordDialog->setCaptureGui(false);
     developerWindow->cameraControlWindow->moveTo(Point2(developerWindow->cameraControlWindow->rect().x0(), 0));
     loadScene(
-        "G3D Cornell Box");
+        "G3D Cornell Box (Spheres)");
     //developerWindow->sceneEditorWindow->selectedScend
 
     // Is this necessary to initialize?
@@ -103,16 +103,16 @@ void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma,
     show(image, caption);
     
    
-//    Array<shared_ptr<Camera>> cameras;
-//    scene()->getTypedEntityArray<Camera>(cameras);
-//    for (int i = 0; i < cameras.length(); ++i) {
-//        shared_ptr<Camera> c = cameras[i];
-//        FilmSettings& f = c->filmSettings();
-//        f.setGamma(gamma);
-//    }
-//    m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
-//    resultTexture->toImage()->save("eyeRayTest.png");
-//    show(resultTexture);
+    //Array<shared_ptr<Camera>> cameras;
+    //scene()->getTypedEntityArray<Camera>(cameras);
+    //for (int i = 0; i < cameras.length(); ++i) {
+    //    shared_ptr<Camera> c = cameras[i];
+    //    FilmSettings& f = c->filmSettings();
+    //    f.setGamma(gamma);
+    //}
+    //m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+    //resultTexture->toImage()->save("eyeRayTest.png");
+    //show(resultTexture);
 }
 
 void App::runTests1() {
@@ -301,8 +301,8 @@ void App::addRenderGUI() {
         catch (...) {
             msgBox("Unable to render the image.");
         }
-        onRender(image);
-        //runTests3();
+        /*onRender(image);*/
+        runTests1();
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());
