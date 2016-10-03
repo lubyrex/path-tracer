@@ -125,6 +125,11 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
 
         }
         else {
+            if (notNull(surfelBuffer)) {
+            
+            
+            }
+
             if (notNull(surfelBuffer[i]) && !lightShadowedBuffer[i]) {
 
                 const Biradiance3 B = biradianceBuffer[i];
