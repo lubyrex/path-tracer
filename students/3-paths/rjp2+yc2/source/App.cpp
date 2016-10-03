@@ -302,7 +302,7 @@ void App::addRenderGUI() {
             msgBox("Unable to render the image.");
         }
         onRender(image);
-        runTests3();
+        //runTests3();
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());
