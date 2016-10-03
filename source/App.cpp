@@ -195,9 +195,9 @@ void App::addRenderGUI() {
             switch (m_resolutionChoice) {
             case 0:image = (Image::create(1280, 720, ImageFormat::RGB32F()));
                 break;
-            case 1:image = (Image::create(320, 200, ImageFormat::RGB8()));
+            case 1:image = (Image::create(320, 200, ImageFormat::RGB32F()));
                 break;
-            case 2:image = (Image::create(640, 400, ImageFormat::RGB8()));
+            case 2:image = (Image::create(640, 400, ImageFormat::RGB32F()));
                 break;
             }
         }
