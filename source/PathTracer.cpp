@@ -65,8 +65,6 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
     Array<bool> lightShadowedBuffer;
 
     modulationBuffer.resize(numPixels);
-    //modulationBuffer.setAll(Color3(1 / (float)raysPerPixel));
-
     rayBuffer.resize(numPixels);
     surfelBuffer.resize(numPixels);
     biradianceBuffer.resize(numPixels);
@@ -75,12 +73,16 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
 
     // Iterate over num rays per pixel
     for (int i = 0; i < raysPerPixel; ++i) {
+        const String& caption = format("Iteration: %i of %i", i, raysPerPixel - 1);
+        debugPrintf("%s\n", caption.c_str());
+
         // Generate all rays
         generateRays(rayBuffer, width, height, multithreading);
         modulationBuffer.setAll(Color3(1.0f / (float)raysPerPixel));
 
         // Iterate over num scattering events
         for (int j = 0; j < scatteringEvents + 1; ++j) {
+
 
             // Find intersected surfels
             traceIntersections(rayBuffer, surfelBuffer, multithreading);
@@ -122,17 +124,18 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
             image->increment(pixel, radiance);
         }
         else if (m_hitsTest) {
-            if(notNull(surfelBuffer[i])){
-            Point3 p = surfelBuffer[i]->position;
-            Radiance3 radiance = Radiance3(p.x*0.3f + 0.5f, p.y*0.3f + 0.5f, p.z*0.3f + 0.5f);
-            image->increment(pixel, radiance);
+            if (notNull(surfelBuffer[i])) {
+                Point3 p = surfelBuffer[i]->position;
+                Radiance3 radiance = Radiance3(p.x*0.3f + 0.5f, p.y*0.3f + 0.5f, p.z*0.3f + 0.5f);
+                image->increment(pixel, radiance);
             }
-        } else if(m_geoNormalsTest){
-            if(notNull(surfelBuffer[i])){
+        }
+        else if (m_geoNormalsTest) {
+            if (notNull(surfelBuffer[i])) {
 
-            Point3 n = surfelBuffer[i]->geometricNormal;
-            Radiance3 radiance = Radiance3(n.x + 1, n.y + 1, n.z + 1)/2.0f;
-            image->increment(pixel, radiance);
+                Point3 n = surfelBuffer[i]->geometricNormal;
+                Radiance3 radiance = Radiance3(n.x + 1, n.y + 1, n.z + 1) / 2.0f;
+                image->increment(pixel, radiance);
             }
         }
         else {
@@ -152,13 +155,14 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
                     Radiance3 radiance = emittedLight + B * mod * f * abs(n.dot(w_i));
 
                     image->increment(pixel, radiance);
-                } else {
+                }
+                else {
                     const Vector3 w_o = rayBuffer[i].direction();
                     const Color3 mod = modulationBuffer[i];
 
                     const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(w_o) * mod;
 
-                     image->increment(pixel, emittedLight);
+                    image->increment(pixel, emittedLight);
                 }
             }
         }

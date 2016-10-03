@@ -57,9 +57,8 @@ Quality Demonstration Images
 Phenomena Demonstration Images
 ===========================================================
 
-Will have to pick 4 phenomena later....
 
-![Caustics](door.jpg width = 150) ![Diffuse Interreflection](sponza.jpg width = 150) ![Soft Shadows](car-ao.jpg width = 150) ![Mirror Reflections](chess.jpg width = 150)
+![Caustics](caustics.png width = 150) ![Diffuse Interreflection](diffuseInterreflection.png width = 150) ![Soft Shadows](softShadows.png width = 150) ![Mirror Reflections](mirrorReflection.png width = 150)
 
 
 Questions
@@ -67,6 +66,7 @@ Questions
 
 1. 
     _Why does it take four scattering events to produce a caustic? Give a diagram or otherwise explain what those events are._ 
+    
     As the graph suggests, there are exactly 4 rays of light needed in order to travel through all the surfaces of the spheres and hits our eye eventually.
     *******************************************************************
     * how light travels through the sphere:                           *
@@ -115,7 +115,14 @@ Questions
 5. 
     _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
 
-    A wizrd is never late, nor does he have to demonstrate mathematical rigor
+        When we are calculating the true solution to the rendering equation for a surfel we are looking at the light emitted by that surfel plus the integral of all the light that is being reflected off of that surfel. However, as that is unrealistic to calculate, we approximate looking at all directions by using a Reimann Sum of a discrete number of randomly chosen directions, i.e. ∑L_i(X,L)∗f(ωi,ωo)∗|ωi⋅n|∗β(L,X). 
+
+     We control the span of this sum with two variables: 
+        - number of paths per pixel, which controls the number of random directions we are looking at to calculate the indirect light.
+        - path length, with controls the number of times we look for indirect light.
+  
+
+ Therefore, assuming that as we randomly select directions to look for indirect light we are uniformly sampling the space, as paths per pixel and path length both approach infinity, our Reimann sum should become equivalent to the integral used to find the true solution to the rendering equation.
 
 
 
@@ -162,7 +169,7 @@ Workflow
   UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  
   Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |   
   Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      | 
-  Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |
+  Run Better Tests/Render | Run better testes with polished codes                          |     0.25      |
   Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    | 
   Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  
  [Project Workflow Planning Table.]
