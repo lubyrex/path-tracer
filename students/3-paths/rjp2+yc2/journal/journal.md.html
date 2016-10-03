@@ -2,56 +2,84 @@
                  **Development Journal**
 
 
-2016-10-02: ??? 514
+
+2016-10-03: Some Nice Mirroring
+=============================================================
+
+![](2016-10-03_003_3-paths_r1319_g3d_r875__.jpg)
+
+
+
+2016-10-03: Gamma test 2 
+=============================================================
+![](2016-10-03_002_3-paths_r1319_g3d_r875__.jpg)
+
+changing from 4 .4 to 0.4 produced no difference so this clearly failed
+
+
+
+2016-10-03: Gamma test 1
+=============================================================
+
+![](2016-10-03_001_3-paths_r1319_g3d_r875__.jpg)
+
+
+
+2016-10-03: Want to add ability to change Gamma value
+=============================================================
+Can't seem to get it working
+
+
+
+2016-10-03: Applying the modulation buffer to emitted light as well helped a lot
+=============================================================
+
+![](2016-10-03_000_3-paths_r1319_g3d_r875__.jpg)
+
+Also a fixed a couple of direction vectors giving us reflections and caustics.
+
+
+
+2016-10-02: 513 Rays Per Pixel and 1 Scattering Event Test
 =============================================================
 
 ![](2016-10-02_007_3-paths_r1266_g3d_r875__.jpg)
 
 
 
-2016-10-02: ??? 67 rays per pixel
+2016-10-02: Pixels still going to just all white 
 =============================================================
 
 ![](2016-10-02_006_3-paths_r1266_g3d_r875__.jpg)
 
-
-
-2016-10-02: ??? Fixed Shadow Ray Creation
-=============================================================
-
-![](2016-10-02_005_3-paths_r1251_g3d_r875__.jpg)
+The number of all-white pixels goes up with the number of scattering events.
 
 
 
-2016-10-02: ???
+2016-10-02: Some semblance of reflection
 =============================================================
 
 ![](2016-10-02_004_3-paths_r1251_g3d_r875__.jpg)
 
 
 
-2016-10-02: ???
-=============================================================
-
-![](2016-10-02_003_3-paths_r1251_g3d_r875__.jpg)
 
 
-
-2016-10-02: ???
+2016-10-02: Speckling might indicate bumping problems
 =============================================================
 
 ![Speckling might indicate bumping problems](2016-10-02_002_3-paths_r1214_g3d_r875__Speckling_might_indicate_bumping_problems.jpg)
 
 
 
-2016-10-02: ???
+2016-10-02: Now creating shadow rays with max distances
 =============================================================
 
 ![Now making shadowRays with max distances so can correctly check visibility](2016-10-02_001_3-paths_r1214_g3d_r875__Now_making_shadowRays_with_max_distances_so_can_correctly_check_visibility.jpg)
 
 
 
-2016-10-02: ???
+2016-10-02: Changed Visibility check to use TriTree:IntersectRays
 =============================================================
 
 ![Changed Visibility check to use TriTree:IntersectRays](2016-10-02_000_3-paths_r1214_g3d_r875__Changed_Visibility_check_to_use_TriTree_IntersectRays.jpg)
@@ -60,17 +88,7 @@
 
 Bug Found: weren't resetting modulation buffer before each raysPerPixel iteration
 =============================================================
-Found thanks to Morgan
-
-
-
-2016-10-01:
-=============================================================
-
-![](2016-10-01_004_3-paths_r1198_g3d_r875__.jpg)
-
-added code to reset modulation buffer,tried to move writeToImage inside the for
-loop and nothing seems to change
+Thanks Morgan.
 
 
 
@@ -83,34 +101,36 @@ loop and nothing seems to change
 
 
 
+2016-10-01: Weird bumping equation results
+=============================================================
+
 Also seem to have inconsistencies with which are bumping point for recursive rays but works better for what seems to be the wrong way
-=============================================================
 
-are bumping by (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionIn))));
+are bumping by (EPSILON * n * (-sign(n.dot(-w_i))));
 
-Seems like should be (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(directionIn))));
+Seems like should be (EPSILON * n * (-sign(m.dot(w_i))));
 
-
-Can't figure out why our images get so dark
-=============================================================
+Why does the first work better? Clearly there are other underlying problems.
 
 
 
-Turning up the rays doesnt change the fact that the faces not touched by direct light are always black, which indicates our direct rays arent working well
+2016-10-01: Faces not touched by direct light always black
 =============================================================
 
 ![Turning up the rays doesnt change the fact that the faces not touched by direct light are always black, which indicates our direct rays arent working well](2016-10-01_002_3-paths_r1171_g3d_r875__Turning_up_the_rays_doesnt_change_the_fact_that_the_faces_not_touched_by_direct_light_are_always_black__which_indicates_our_direct_rays_arent_working_well.jpg)
 
+Turning up the rays doesn't change the fact that the faces not touched by direct light are always black, which indicates our direct rays arent working well
 
 
-When you stop multiplying the modulation buffer by the 'weight' we have normal levels of light
+2016-10-01: Modulation buffer may be causing our darkness problem
 =============================================================
 
 ![](2016-10-01_001_3-paths_r1171_g3d_r875__.jpg)
 
+When you stop multiplying the modulation buffer by the 'weight' we have normal levels of light
 
 
-Image  gets very dark when we increase number of rays per pixel
+Image gets very dark as increase number of rays per pixel
 =============================================================
 
 ![](2016-10-01_000_3-paths_r1171_g3d_r875__.jpg)
@@ -128,34 +148,34 @@ through our loop
 
 
 
-Changed scatter function to not use Russian Roulette
+2016-09-30: Changed scatter function to not use Russian Roulette
 =============================================================
 
 ![](2016-09-30_002_3-paths_r1159_g3d_r875__.jpg)
 
 
 
-Fixed CheckVisibility to correctly return when surfel is null
+2016-09-30: Fixed CheckVisibility to correctly return when surfel is null
 =============================================================
 
 
 
 
-Put Image Writing before modulationBuffer Updating
+2016-09-30: Put Image Writing before modulationBuffer Updating
 =============================================================
 
 ![](2016-09-30_001_3-paths_r1159_g3d_r875__.jpg)
 
 
 
-What in the world happened
+2016-09-30: What in the world happened
 =============================================================
 
 ![](2016-09-30_000_3-paths_r1159_g3d_r875__.jpg)
 
 
 
-Shadow Ray isn;t intersecting anything, why???
+2016-09-30:Shadow Ray isn;t intersecting anything, why???
 ==========================================
 
 For some reason. our shadow rays (from the light to the surfel) aren't intersecting anything, which doesnt make any sense.
@@ -173,7 +193,7 @@ Saturday: 4:00 - 6:00 (2.0)
 
 Sunday: 4:30 - 6:00  (1.5) + Optional(7:00 - 10:00 (3))
 
-Monday: 3:00 - 6:00 (3.0)
+Monday: 3:00 - 6:00 (3.0) 
 
 
 
@@ -189,14 +209,14 @@ Workflow
   PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  0.5
   Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |  0.5
   Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  0.5
-  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  2.7
-  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |
-  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |
+  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  2.2
+  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |  0.5
+  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |   
   UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  
   Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |   
   Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      | 
   Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |
-  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    |  5.2
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    |  6.2
   Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  
  [Project Workflow Planning Table.]
 
