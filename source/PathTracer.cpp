@@ -140,7 +140,6 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
             if (notNull(surfelBuffer[i])) {
 
                 if (!lightShadowedBuffer[i]) {
-
                     const Biradiance3 B = biradianceBuffer[i];
                     const Vector3 n = surfelBuffer[i]->geometricNormal;
                     const Vector3 w_i = shadowRayBuffer[i].direction();
@@ -153,8 +152,7 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
                     Radiance3 radiance = emittedLight + B * mod * f * abs(n.dot(w_i));
 
                     image->increment(pixel, radiance);
-                }
-                else {
+                } else {
                     const Vector3 w_o = rayBuffer[i].direction();
                     const Color3 mod = modulationBuffer[i];
 
@@ -194,43 +192,7 @@ void PathTracer::generateRecursiveRays(Array<Ray>& rayBuffer, Array<Color3>& mod
 
 
 void PathTracer::testVisibility(const Array<Ray>& shadowRayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<bool>& lightShadowedBuffer, const bool& multithreading) const {
-
     m_tris.intersectRays(shadowRayBuffer, lightShadowedBuffer, TriTree::COHERENT_RAY_HINT | TriTree::DO_NOT_CULL_BACKFACES | TriTree::OCCLUSION_TEST_ONLY);
-
-
-
-    //Thread::runConcurrently(0, shadowRayBuffer.size(), [&](int i) {
-
-    //    // TODO Should we worry about not having this??
-    //    //if (!light->castsShadows()) return true;
-
-    //    const Ray& shadowRay = shadowRayBuffer[i];
-
-    //    // intersectedSurfel closest surfel to light along shadowRay, chosenSurfel surfel we originally hit
-    //    const shared_ptr<Surfel>& intersectedSurfel = m_tris.intersectRay(shadowRay);
-    //    const shared_ptr<Surfel>& chosenSurfel = surfelBuffer[i];
-
-    //    if (isNull(chosenSurfel)) {
-    //        lightShadowedBuffer[i] = true;
-    //    }
-    //    else if (isNull(intersectedSurfel)) {
-    //        // Didnt hit anything at all, but consider there to be nothing in the way
-    //        lightShadowedBuffer[i] = false;
-    //    }
-    //    else {
-    //        // Calculate distances
-    //        const float intersectDist = (intersectedSurfel->position - shadowRay.origin()).squaredLength();
-    //        const float chosenDist = (chosenSurfel->position - shadowRay.origin()).squaredLength();
-
-    //        // Check whether first surfel intersected is our surfel
-    //        const bool isBlocked = (intersectDist < chosenDist - EPSILON);
-    //        lightShadowedBuffer[i] = isBlocked;
-    //    }
-
-    //    lightShadowedBuffer[i] = false;
-
-    //}, !multithreading);
-
 }
 
 
@@ -313,116 +275,100 @@ void PathTracer::generateRays(Array<Ray>& rayBuffer, const int& width, const int
 
 
 void PathTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_ptr<Surfel>>& surfelBuffer, const bool& multithreading) const {
-    // Find intersection
-    m_tris.intersectRays(rayBuffer, surfelBuffer, TriTree::IntersectRayOptions(16));
-
-    //Thread::runConcurrently(0, numPixels, [&](int i) {
-    //    const shared_ptr<Surfel>& surfel = tris.intersectRay(rayBuffer[i]);
-    //    surfelBuffer[i] = surfel;
-
-    //    //// Add emmited light from objects / scene
-    //    //if (notNull(surfel)) {
-    //    //    // Emmited light from surfel
-    //    //    modulationBuffer[i] += surfel->emittedRadiance(rayBuffer[i].direction());
-    //    //}
-    //    //else {
-    //    //    // Emmited light from skybox
-    //    //    // TODO change this so it actualy works
-    //    //    modulationBuffer[i] += Color3::black();
-    //    //}
-    //}, !multithreading);
+    // Find intersections
+    m_tris.intersectRays(rayBuffer, surfelBuffer, TriTree::COHERENT_RAY_HINT);
 }
 
-
-
-Radiance3 PathTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft, const bool isEyeRay) const {
-
-    // Find intersection between ray and scene
-    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
-
-    if (notNull(surfel)) {
-        Radiance3 emittedLight = surfel->emittedRadiance(-ray.direction());
-        Radiance3 directLight = getDirectLight(ray, surfel, lightArray);
-        Radiance3 indirectLight = Radiance3(0.0f, 0.0f, 0.0f);
-
-        // indirect recursive call
-        if (indirectCount > 0) {
-            if (recursionsLeft > 0) {
-                for (int i = 0; i < indirectCount; ++i) {
-                    const Vector3 direction = G3D::Vector3::cosHemiRandom(surfel->shadingNormal);
-                    const Point3 surfelPosition = surfel->position;
-                    Point3 bumpedPoint = surfelPosition + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-direction))));
-
-                    Ray recursiveRay(bumpedPoint, direction);
-
-                    const Color3 scatter = surfel->finiteScatteringDensity(recursiveRay.direction(), -ray.direction());
-
-                    const Radiance3 recursion = trace(recursiveRay, lightArray, indirectCount, recursionsLeft - 1, false);
-                    indirectLight += recursion * scatter / indirectCount;
-                }
-            }
-        }
-        else {
-            indirectLight += surfel->reflectivity(Random::threadCommon()) * 0.05f;
-        }
-
-        return emittedLight + directLight + indirectLight;
-    }
-    else {
-        return Radiance3(0, 0, 0);
-    }
-}
-
-
-Radiance3 PathTracer::getDirectLight(const Ray& ray,
-    const shared_ptr<Surfel>& surfel,
-    const Array<shared_ptr<Light>>& lightArray) const {
-
-    const Point3& pos = surfel->position;
-    const Vector3& n = surfel->shadingNormal;
-
-    Radiance3 directLight;
-
-    int numLights = lightArray.length();
-    for (int i = 0; i < numLights; ++i) {
-        const shared_ptr<Light>& light = lightArray[i];
-
-        const Vector3 directionToLight = (light->position().xyz() - pos).direction();
-
-        //Vector3 directionFromLight = (surfelPosition - light->position().xyz()).direction();
-        const Point3 bumpedPoint = pos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionToLight))));
-
-        //directionToLight = (light->position().xyz() - bumpedPoint).direction();
-        const Ray lightCheckRay(bumpedPoint, directionToLight);
-
-        // shading
-        if (isLightVisible(lightCheckRay, light)) {
-            const Biradiance3& B = light->biradiance(pos);
-            Color3 f = surfel->finiteScatteringDensity(lightCheckRay.direction(), -ray.direction());
-
-            directLight += B * f * abs(n.dot(lightCheckRay.direction()));
-        }
-    }
-
-    return directLight;
-}
-
-
-
-
-bool PathTracer::isLightVisible(const Ray ray, const shared_ptr<Light> light) const {
-
-    if (!light->castsShadows()) return true;
-
-    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
-
-    if (notNull(surfel)) {
-        const float intersectDist = (surfel->position - ray.origin()).squaredLength();
-        const float lightDist = (light->position().xyz() - ray.origin()).squaredLength();
-
-        const bool isBlocked = (intersectDist < lightDist - EPSILON);
-        return !isBlocked;
-    }
-
-    return true;
-}
+//
+//
+//Radiance3 PathTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft, const bool isEyeRay) const {
+//
+//    // Find intersection between ray and scene
+//    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
+//
+//    if (notNull(surfel)) {
+//        Radiance3 emittedLight = surfel->emittedRadiance(-ray.direction());
+//        Radiance3 directLight = getDirectLight(ray, surfel, lightArray);
+//        Radiance3 indirectLight = Radiance3(0.0f, 0.0f, 0.0f);
+//
+//        // indirect recursive call
+//        if (indirectCount > 0) {
+//            if (recursionsLeft > 0) {
+//                for (int i = 0; i < indirectCount; ++i) {
+//                    const Vector3 direction = G3D::Vector3::cosHemiRandom(surfel->shadingNormal);
+//                    const Point3 surfelPosition = surfel->position;
+//                    Point3 bumpedPoint = surfelPosition + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-direction))));
+//
+//                    Ray recursiveRay(bumpedPoint, direction);
+//
+//                    const Color3 scatter = surfel->finiteScatteringDensity(recursiveRay.direction(), -ray.direction());
+//
+//                    const Radiance3 recursion = trace(recursiveRay, lightArray, indirectCount, recursionsLeft - 1, false);
+//                    indirectLight += recursion * scatter / indirectCount;
+//                }
+//            }
+//        }
+//        else {
+//            indirectLight += surfel->reflectivity(Random::threadCommon()) * 0.05f;
+//        }
+//
+//        return emittedLight + directLight + indirectLight;
+//    }
+//    else {
+//        return Radiance3(0, 0, 0);
+//    }
+//}
+//
+//
+//Radiance3 PathTracer::getDirectLight(const Ray& ray,
+//    const shared_ptr<Surfel>& surfel,
+//    const Array<shared_ptr<Light>>& lightArray) const {
+//
+//    const Point3& pos = surfel->position;
+//    const Vector3& n = surfel->shadingNormal;
+//
+//    Radiance3 directLight;
+//
+//    int numLights = lightArray.length();
+//    for (int i = 0; i < numLights; ++i) {
+//        const shared_ptr<Light>& light = lightArray[i];
+//
+//        const Vector3 directionToLight = (light->position().xyz() - pos).direction();
+//
+//        //Vector3 directionFromLight = (surfelPosition - light->position().xyz()).direction();
+//        const Point3 bumpedPoint = pos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionToLight))));
+//
+//        //directionToLight = (light->position().xyz() - bumpedPoint).direction();
+//        const Ray lightCheckRay(bumpedPoint, directionToLight);
+//
+//        // shading
+//        if (isLightVisible(lightCheckRay, light)) {
+//            const Biradiance3& B = light->biradiance(pos);
+//            Color3 f = surfel->finiteScatteringDensity(lightCheckRay.direction(), -ray.direction());
+//
+//            directLight += B * f * abs(n.dot(lightCheckRay.direction()));
+//        }
+//    }
+//
+//    return directLight;
+//}
+//
+//
+//
+//
+//bool PathTracer::isLightVisible(const Ray ray, const shared_ptr<Light> light) const {
+//
+//    if (!light->castsShadows()) return true;
+//
+//    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
+//
+//    if (notNull(surfel)) {
+//        const float intersectDist = (surfel->position - ray.origin()).squaredLength();
+//        const float lightDist = (light->position().xyz() - ray.origin()).squaredLength();
+//
+//        const bool isBlocked = (intersectDist < lightDist - EPSILON);
+//        return !isBlocked;
+//    }
+//
+//    return true;
+//}

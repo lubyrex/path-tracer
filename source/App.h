@@ -17,6 +17,9 @@ protected:
     int m_scatteringEvents = 0;
     int m_resolutionChoice = 1;
 
+
+    float m_gamma = 2.0f;
+
     // Path tracer
     //PathTracer m_pathTracer;
 
@@ -33,13 +36,14 @@ protected:
     void runTests1();
     void runTests2();
     void runTests3();
-    void processAndSaveImage(shared_ptr<Image> image, String name, float gamma,StopWatch watch);
+    void processAndSaveImage(shared_ptr<Image> image, String name, float gamma, Stopwatch watch);
 
 public:
 
     App(const GApp::Settings& settings = GApp::Settings());
 
     virtual void onInit() override;
+    void onAfterLoadScene(const Any & any, const String & sceneName);
     virtual void onSimulation(RealTime rdt, SimTime sdt, SimTime idt) override;
 
     virtual void onGraphics3D(RenderDevice* rd, Array<shared_ptr<Surface> >& surface3D) override;

@@ -70,11 +70,26 @@ void App::onInit() {
     // developerWindow->videoRecordDialog->setCaptureGui(false);
     developerWindow->cameraControlWindow->moveTo(Point2(developerWindow->cameraControlWindow->rect().x0(), 0));
     loadScene(
-        "G3D Cornell Box (Spheres)");
+        "G3D Cornell Box");
     //developerWindow->sceneEditorWindow->selectedScend
 
     // Is this necessary to initialize?
      //m_pathTracer;
+}
+
+void App::onAfterLoadScene(const Any& any, const String& sceneName) {
+    GApp::onAfterLoadScene(any, sceneName);
+    Array<shared_ptr<Camera>> cameras;
+    scene()->getTypedEntityArray<Camera>(cameras);
+    for (int i = 0; i < cameras.length(); ++i) {
+        shared_ptr<Camera> c = cameras[i];
+        FilmSettings& f = c->filmSettings();
+        f.setGamma(m_gamma);
+        f.setAntialiasingEnabled(false);
+        f.setBloomStrength(0.0f);
+        f.setVignetteBottomStrength(0.0f);
+        f.setVignetteTopStrength(0.0f);
+    }
 }
 
 void App::message(const String& msg) const {
@@ -88,31 +103,30 @@ void App::message(const String& msg) const {
     renderDevice->swapBuffers();
 }
 
-void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma,Stopwatch watch) {
+void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma, Stopwatch watch) {
     image->convert(ImageFormat::RGB8());
-
 
     const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
     shared_ptr<Texture> resultTexture;
-    
-    
+
+
     image->save(name);
     double time = watch.elapsedTime();
     const String& caption = format("Time: %fs", time);
     debugPrintf("%s\n", caption.c_str());
     show(image, caption);
-    
-   
-    //Array<shared_ptr<Camera>> cameras;
-    //scene()->getTypedEntityArray<Camera>(cameras);
-    //for (int i = 0; i < cameras.length(); ++i) {
-    //    shared_ptr<Camera> c = cameras[i];
-    //    FilmSettings& f = c->filmSettings();
-    //    f.setGamma(gamma);
-    //}
-    //m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
-    //resultTexture->toImage()->save("eyeRayTest.png");
-    //show(resultTexture);
+
+
+    //    Array<shared_ptr<Camera>> cameras;
+    //    scene()->getTypedEntityArray<Camera>(cameras);
+    //    for (int i = 0; i < cameras.length(); ++i) {
+    //        shared_ptr<Camera> c = cameras[i];
+    //        FilmSettings& f = c->filmSettings();
+    //        f.setGamma(gamma);
+    //    }
+    //    m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+    //    resultTexture->toImage()->save("eyeRayTest.png");
+    //    show(resultTexture);
 }
 
 void App::runTests1() {
@@ -122,10 +136,13 @@ void App::runTests1() {
 
     // Eye ray directions
     stopWatch.reset();
+    //m_gamma = 0.4;
+    //ArticulatedModel::clearCache();
+    //loadScene(scene()->name());
     tracer.m_eyeRayTest = true;
     shared_ptr<Image> eyeRay = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(eyeRay, stopWatch);
-    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4,stopWatch);
+    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4, stopWatch);
     tracer.m_eyeRayTest = false;
 
     // hit positions
@@ -133,7 +150,7 @@ void App::runTests1() {
     tracer.m_hitsTest = true;
     shared_ptr<Image> hits = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(hits, stopWatch);
-    processAndSaveImage(hits, "hitsTest.png", 4.4,stopWatch);
+    processAndSaveImage(hits, "hitsTest.png", 4.4, stopWatch);
     tracer.m_hitsTest = false;
 
     // geo normals
@@ -141,7 +158,7 @@ void App::runTests1() {
     tracer.m_geoNormalsTest = true;
     shared_ptr<Image> geoNormals = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(geoNormals, stopWatch);
-    processAndSaveImage(geoNormals, "normalsTest.png", 2.2,stopWatch);
+    processAndSaveImage(geoNormals, "normalsTest.png", 2.2, stopWatch);
     tracer.m_geoNormalsTest = false;
 }
 
@@ -150,41 +167,41 @@ void App::runTests2() {
     StopWatch stopWatch;
     //ArticulatedModel::clearCache();
 
-    
+
     scene()->load("G3D Cornell Box");
     tracer.setScene(scene());
     stopWatch.reset();
     shared_ptr<Image> cornell = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(cornell, stopWatch,1,true,1);
-    processAndSaveImage(cornell, "Cornell.png", 4.4,stopWatch);
+    tracer.renderScene(cornell, stopWatch, 1, true, 1);
+    processAndSaveImage(cornell, "Cornell.png", 4.4, stopWatch);
 
-    
+
     stopWatch.reset();
     scene()->load("G3D Cornell Box (Spheres)");
     tracer.setScene(scene());
     shared_ptr<Image> sphere = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere, stopWatch,128,true,1);
-    processAndSaveImage(sphere, "Sphere.png", 4.4,stopWatch);
+    tracer.renderScene(sphere, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere, "Sphere.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere2 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere2, stopWatch,128,true,1);
-    processAndSaveImage(sphere2, "Sphere2.png", 4.4,stopWatch);
+    tracer.renderScene(sphere2, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere2, "Sphere2.png", 4.4, stopWatch);
 
-   stopWatch.reset();
+    stopWatch.reset();
     shared_ptr<Image> sphere3 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere3, stopWatch,128,true,1);
-    processAndSaveImage(sphere3, "Sphere3.png", 4.4,stopWatch);
+    tracer.renderScene(sphere3, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere3, "Sphere3.png", 4.4, stopWatch);
 
-   stopWatch.reset();
+    stopWatch.reset();
     shared_ptr<Image> sphere4 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere4, stopWatch,128,true,1);
-    processAndSaveImage(sphere4, "Sphere4.png", 4.4,stopWatch);
+    tracer.renderScene(sphere4, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere4, "Sphere4.png", 4.4, stopWatch);
 
-   stopWatch.reset();
+    stopWatch.reset();
     shared_ptr<Image> sphere10 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere10, stopWatch,128,true,1);
-    processAndSaveImage(sphere10, "Sphere5.png", 4.4,stopWatch);
+    tracer.renderScene(sphere10, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere10, "Sphere5.png", 4.4, stopWatch);
 
 }
 
@@ -193,54 +210,56 @@ void App::runTests3() {
     StopWatch stopWatch;
     //ArticulatedModel::clearCache();
 
-    
+
     scene()->load("G3D Sponza");
     tracer.setScene(scene());
     shared_ptr<Image> sponza = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza, stopWatch,1,true,1);
-    processAndSaveImage(sponza, "Sponza.png", 4.4,stopWatch);
+    tracer.renderScene(sponza, stopWatch, 1, true, 1);
+    processAndSaveImage(sponza, "Sponza.png", 4.4, stopWatch);
 
-    
+
     stopWatch.reset();
     shared_ptr<Image> sponza2 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza2, stopWatch,1,true,2);
-    processAndSaveImage(sponza2, "Sponza2.png", 4.4,stopWatch);
+    tracer.renderScene(sponza2, stopWatch, 1, true, 2);
+    processAndSaveImage(sponza2, "Sponza2.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sponza3 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza3, stopWatch,1,true,3);
-    processAndSaveImage(sponza3, "Sponza3.png", 4.4,stopWatch);
+    tracer.renderScene(sponza3, stopWatch, 1, true, 3);
+    processAndSaveImage(sponza3, "Sponza3.png", 4.4, stopWatch);
 
-     stopWatch.reset();
+    stopWatch.reset();
     shared_ptr<Image> sponza4 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza4, stopWatch,1,true,4);
-    processAndSaveImage(sponza4, "Sponza4.png", 4.4,stopWatch);
+    tracer.renderScene(sponza4, stopWatch, 1, true, 4);
+    processAndSaveImage(sponza4, "Sponza4.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sponza5 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza5, stopWatch,4,true,1);
-    processAndSaveImage(sponza5, "Sponza5.png", 4.4,stopWatch);
+    tracer.renderScene(sponza5, stopWatch, 4, true, 1);
+    processAndSaveImage(sponza5, "Sponza5.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sponza6 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza6, stopWatch,16,true,1);
-    processAndSaveImage(sponza6, "Sponza6.png", 4.4,stopWatch);
-    
+    tracer.renderScene(sponza6, stopWatch, 16, true, 1);
+    processAndSaveImage(sponza6, "Sponza6.png", 4.4, stopWatch);
+
     stopWatch.reset();
     shared_ptr<Image> sponza7 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza7, stopWatch,256,true,1);
-    processAndSaveImage(sponza7, "Sponza7.png", 4.4,stopWatch);
+    tracer.renderScene(sponza7, stopWatch, 256, true, 1);
+    processAndSaveImage(sponza7, "Sponza7.png", 4.4, stopWatch);
 
-     stopWatch.reset(); 
+    stopWatch.reset();
     shared_ptr<Image> sponza8 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sponza8, stopWatch,1024,true,1);
-    processAndSaveImage(sponza8, "Sponza8.png", 4.4,stopWatch);
+    tracer.renderScene(sponza8, stopWatch, 1024, true, 1);
+    processAndSaveImage(sponza8, "Sponza8.png", 4.4, stopWatch);
 
-   
+
 }
 
 void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
+    ArticulatedModel::clearCache();
+    loadScene(scene()->name());
 
     StopWatch stopWatch;
     PathTracer tracer = PathTracer(scene());
@@ -259,18 +278,18 @@ void App::onRender(shared_ptr<Image> &image) {
 
     // Post-process image
     // Why does the saved image look so weird???
-    const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
-    shared_ptr<Texture> resultTexture;
-    //m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
-    // m_film->exposeAndRender(renderDevice, m_debugCamera->filmSettings(), src, 0/* settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x*/, 0 /*settings().hdrFramebuffer.depthGuardBandThickness.x*/, resultTexture);
-    //show(resultTexture);
-    // resultTexture->toImage()->save("result.png");
+   //const shared_ptr<Texture>& src = Texture::fromImage("Source", image, ImageFormat::RGB8());
+   // shared_ptr<Texture> resultTexture;
+   // resultTexture->resize(image->width(), image->height());
+   // m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+   //  show(resultTexture);
+   // resultTexture->toImage()->save("result.png");
 
      //if (m_resultTexture) {
      //    m_resultTexture->resize(image->width(), image->height());
      //};
 
-     // m_film->exposeAndRender(rd, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x);
+     //m_film->exposeAndRender(rd, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x);
 }
 
 /// Adds gui pane to let the user create a height field from an image and specified xz and y scaling amounts
@@ -301,8 +320,8 @@ void App::addRenderGUI() {
         catch (...) {
             msgBox("Unable to render the image.");
         }
-        /*onRender(image);*/
-        runTests1();
+        onRender(image);
+        //runTests1();
 
         ArticulatedModel::clearCache();
         loadScene(scene()->name());
