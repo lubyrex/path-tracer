@@ -180,27 +180,27 @@ void App::runTests2() {
     scene()->load("G3D Cornell Box (Spheres)");
     tracer.setScene(scene());
     shared_ptr<Image> sphere = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere, stopWatch, 128, true, 1);
+    tracer.renderScene(sphere, stopWatch, 128, true, 0);
     processAndSaveImage(sphere, "Sphere.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere2 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere2, stopWatch, 128, true, 1);
+    tracer.renderScene(sphere2, stopWatch, 128, true, 2);
     processAndSaveImage(sphere2, "Sphere2.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere3 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere3, stopWatch, 128, true, 1);
+    tracer.renderScene(sphere3, stopWatch, 128, true, 3);
     processAndSaveImage(sphere3, "Sphere3.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere4 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere4, stopWatch, 128, true, 1);
+    tracer.renderScene(sphere4, stopWatch, 128, true, 4);
     processAndSaveImage(sphere4, "Sphere4.png", 4.4, stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere10 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere10, stopWatch, 128, true, 1);
+    tracer.renderScene(sphere10, stopWatch, 128, true, 9);
     processAndSaveImage(sphere10, "Sphere5.png", 4.4, stopWatch);
 
 }
@@ -321,7 +321,7 @@ void App::addRenderGUI() {
             msgBox("Unable to render the image.");
         }
         onRender(image);
-        //runTests1();
+        //runTests2();
 
         ArticulatedModel::clearCache();
         //loadScene(scene()->name());
