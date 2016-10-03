@@ -65,24 +65,55 @@ Will have to pick 4 phenomena later....
 Questions
 =============================================================
 
-1. _Why does it take four scattering events to produce a caustic? Give a diagram or otherwise explain what those events are._ 
+1. 
+    _Why does it take four scattering events to produce a caustic? Give a diagram or otherwise explain what those events are._ 
+    As the graph suggests, there are exactly 4 rays of light needed in order to travel through all the surfaces of the spheres and hits our eye eventually.
+    *******************************************************************
+    * how light travels through the sphere:                           *
+    *                                                                 *
+    *                        |                                        *
+    *                        |                                        *
+    *                --------v-----------  upper surface              *
+    *                         \                                       *
+    *                          \                                      *
+    *                           \                                     *
+    *                            \                                    *
+    *                             v                                   *
+    *                   ----------|--------    lower surface          *
+    *                             |   eye                             *
+    *                             |  ^                                *
+    *                             | /                                 *
+    *                   ----------v---------   floor                  *
+    *                                                                 *
+    *******************************************************************      
 
-        Hmm good question
-
-2. _Derive an asymptotic bound on the run time of the global illumination renderer from the Rays project, were it to recurse to an arbitrary path depth. _ 
+2.
+     _Derive an asymptotic bound on the run time of the global illumination renderer from the Rays project, were it to recurse to an arbitrary path depth. _ 
     
-    Will definitely do
-        
+    $n$: pixels,
+    $d$: maximum path depth,
+    $p$: primary rays per pixel,
+    $L$: lights in the scene,
+    $r$: recursive rays
 
-3. _Derive an asymptotic bound on the run time of the path tracer from this project using the same variables from the previous question._ 
+    The run time is $O(n×p×L×r^d)$,
 
-    W???
+    For each pixel in the image, we trace p rays, and computed direct illumination from all sources of light L, and the run time so far is $O(n×p×L)$. For each of these events, we trace back r recursive rays, for d depth, which means in total we create $(r^d)$ rays for each event. Therefore the final run time is $O(n×p×L×r^d)$.
+   
+3.
+    _Derive an asymptotic bound on the run time of the path tracer from this project using the same variables from the previous question._ 
 
-4. _Derive an algorithm to sample the numbers from 0 to 100 proportional to their value._ 
+   The run time is $O(n×p×d)$. 
+   
+   The reasoning is basically the same as the previous question, except in this project, we use importance sampling and only pick one "important" light from all the light sources to represent all the light source. We also only have 1 recursive ray for every primary ray per pixel.
+
+4. 
+    _Derive an algorithm to sample the numbers from 0 to 100 proportional to their value._ 
     
     Be well
     
-5. _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
+5. 
+    _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
 
     A wizrd is never late, nor does he have to demonstrate mathematical rigor
 
