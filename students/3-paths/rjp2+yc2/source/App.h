@@ -35,8 +35,8 @@ protected:
 
     void runTests1();
     void runTests2();
-    void runTests3();
-    void processAndSaveImage(shared_ptr<Image> image, String name, float gamma, Stopwatch watch);
+    void runSponzaTests();
+    void processAndSaveImage(shared_ptr<Image> image, String name, Stopwatch watch);
 
 public:
 

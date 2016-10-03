@@ -103,7 +103,7 @@ void App::message(const String& msg) const {
     renderDevice->swapBuffers();
 }
 
-void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma, Stopwatch watch) {
+void App::processAndSaveImage(shared_ptr<Image> image, String name, Stopwatch watch) {
     image->convert(ImageFormat::RGB8());
 
     const shared_ptr<Texture>& src = Texture::fromImage("Source", image);
@@ -113,7 +113,7 @@ void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma,
     image->save(name);
     double time = watch.elapsedTime();
     const String& caption = format("Time: %fs", time);
-    debugPrintf("%s\n", caption.c_str());
+    debugPrintf("%s: %s\n", name, caption.c_str());
     show(image, caption);
 
 
@@ -124,7 +124,7 @@ void App::processAndSaveImage(shared_ptr<Image> image, String name, float gamma,
     //        FilmSettings& f = c->filmSettings();
     //        f.setGamma(gamma);
     //    }
-    //    m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), m_framebuffer->texture(0), settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
+        //m_film->exposeAndRender(renderDevice, activeCamera()->filmSettings(), src, settings().hdrFramebuffer.colorGuardBandThickness.x + settings().hdrFramebuffer.depthGuardBandThickness.x, settings().hdrFramebuffer.depthGuardBandThickness.x, resultTexture);
     //    resultTexture->toImage()->save("eyeRayTest.png");
     //    show(resultTexture);
 }
@@ -142,7 +142,7 @@ void App::runTests1() {
     tracer.m_eyeRayTest = true;
     shared_ptr<Image> eyeRay = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(eyeRay, stopWatch);
-    processAndSaveImage(eyeRay, "eyeRayTest.png", 4.4, stopWatch);
+    processAndSaveImage(eyeRay, "eyeRayTest.png", stopWatch);
     tracer.m_eyeRayTest = false;
 
     // hit positions
@@ -150,7 +150,7 @@ void App::runTests1() {
     tracer.m_hitsTest = true;
     shared_ptr<Image> hits = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(hits, stopWatch);
-    processAndSaveImage(hits, "hitsTest.png", 4.4, stopWatch);
+    processAndSaveImage(hits, "hitsTest.png", stopWatch);
     tracer.m_hitsTest = false;
 
     // geo normals
@@ -158,7 +158,7 @@ void App::runTests1() {
     tracer.m_geoNormalsTest = true;
     shared_ptr<Image> geoNormals = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(geoNormals, stopWatch);
-    processAndSaveImage(geoNormals, "normalsTest.png", 2.2, stopWatch);
+    processAndSaveImage(geoNormals, "normalsTest.png", stopWatch);
     tracer.m_geoNormalsTest = false;
 }
 
@@ -173,39 +173,39 @@ void App::runTests2() {
     stopWatch.reset();
     shared_ptr<Image> cornell = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(cornell, stopWatch, 1, true, 1);
-    processAndSaveImage(cornell, "Cornell.png", 4.4, stopWatch);
+    processAndSaveImage(cornell, "Cornell.png", stopWatch);
 
 
     stopWatch.reset();
     scene()->load("G3D Cornell Box (Spheres)");
     tracer.setScene(scene());
     shared_ptr<Image> sphere = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere, stopWatch, 128, true, 0);
-    processAndSaveImage(sphere, "Sphere.png", 4.4, stopWatch);
+    tracer.renderScene(sphere, stopWatch, 128, true, 1);
+    processAndSaveImage(sphere, "SphereScatter1.png", stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere2 = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(sphere2, stopWatch, 128, true, 2);
-    processAndSaveImage(sphere2, "Sphere2.png", 4.4, stopWatch);
+    processAndSaveImage(sphere2, "SphereScatter2.png", stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere3 = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(sphere3, stopWatch, 128, true, 3);
-    processAndSaveImage(sphere3, "Sphere3.png", 4.4, stopWatch);
+    processAndSaveImage(sphere3, "SphereScatter3.png", stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere4 = Image::create(320, 200, ImageFormat::RGB32F());
     tracer.renderScene(sphere4, stopWatch, 128, true, 4);
-    processAndSaveImage(sphere4, "Sphere4.png", 4.4, stopWatch);
+    processAndSaveImage(sphere4, "SphereScatter4.png", stopWatch);
 
     stopWatch.reset();
     shared_ptr<Image> sphere10 = Image::create(320, 200, ImageFormat::RGB32F());
-    tracer.renderScene(sphere10, stopWatch, 128, true, 9);
-    processAndSaveImage(sphere10, "Sphere5.png", 4.4, stopWatch);
+    tracer.renderScene(sphere10, stopWatch, 128, true, 10);
+    processAndSaveImage(sphere10, "SphereScatters10.png", stopWatch);
 
 }
 
-void App::runTests3() {
+void App::runSponzaTests() {
     PathTracer tracer(scene());
     StopWatch stopWatch;
     //ArticulatedModel::clearCache();
@@ -213,53 +213,51 @@ void App::runTests3() {
 
     scene()->load("G3D Sponza");
     tracer.setScene(scene());
-    shared_ptr<Image> sponza = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza, stopWatch, 1, true, 1);
-    processAndSaveImage(sponza, "Sponza.png", 4.4, stopWatch);
+    processAndSaveImage(sponza, "SponzaScatterPaths1.png", stopWatch);
 
 
     stopWatch.reset();
-    shared_ptr<Image> sponza2 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza2 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza2, stopWatch, 1, true, 2);
-    processAndSaveImage(sponza2, "Sponza2.png", 4.4, stopWatch);
+    processAndSaveImage(sponza2, "SponzaScatter2.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza3 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza3 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza3, stopWatch, 1, true, 3);
-    processAndSaveImage(sponza3, "Sponza3.png", 4.4, stopWatch);
+    processAndSaveImage(sponza3, "SponzaScatter3.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza4 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza4 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza4, stopWatch, 1, true, 4);
-    processAndSaveImage(sponza4, "Sponza4.png", 4.4, stopWatch);
+    processAndSaveImage(sponza4, "SponzaScatter4.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza5 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza5 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza5, stopWatch, 4, true, 1);
-    processAndSaveImage(sponza5, "Sponza5.png", 4.4, stopWatch);
+    processAndSaveImage(sponza5, "SponzaPaths4.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza6 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza6 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza6, stopWatch, 16, true, 1);
-    processAndSaveImage(sponza6, "Sponza6.png", 4.4, stopWatch);
+    processAndSaveImage(sponza6, "SponzaPaths16.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza7 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza7 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza7, stopWatch, 256, true, 1);
-    processAndSaveImage(sponza7, "Sponza7.png", 4.4, stopWatch);
+    processAndSaveImage(sponza7, "SponzaPaths256.png", stopWatch);
 
     stopWatch.reset();
-    shared_ptr<Image> sponza8 = Image::create(320, 200, ImageFormat::RGB32F());
+    shared_ptr<Image> sponza8 = Image::create(640, 400, ImageFormat::RGB32F());
     tracer.renderScene(sponza8, stopWatch, 1024, true, 1);
-    processAndSaveImage(sponza8, "Sponza8.png", 4.4, stopWatch);
+    processAndSaveImage(sponza8, "SponzaPaths1024.png", stopWatch);
 
 
 }
 
 void App::onRender(shared_ptr<Image> &image) {
     message("Rendering...");
-    ArticulatedModel::clearCache();
-    loadScene(scene()->name());
 
     StopWatch stopWatch;
     PathTracer tracer = PathTracer(scene());
@@ -276,8 +274,8 @@ void App::onRender(shared_ptr<Image> &image) {
     image->convert(ImageFormat::RGB8());
     image->save("eyeRayTest.png");
 
-    // Post-process image
-    // Why does the saved image look so weird???
+   // Post-process image
+   // Why does the saved image look so weird???
    //const shared_ptr<Texture>& src = Texture::fromImage("Source", image, ImageFormat::RGB8());
    // shared_ptr<Texture> resultTexture;
    // resultTexture->resize(image->width(), image->height());
@@ -321,7 +319,7 @@ void App::addRenderGUI() {
             msgBox("Unable to render the image.");
         }
         onRender(image);
-        //runTests2();
+        //runSponzaTests();
 
         ArticulatedModel::clearCache();
         //loadScene(scene()->name());
