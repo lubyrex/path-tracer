@@ -22,12 +22,12 @@ protected:
             checks if individual light is illuminating point using intersection
             called from getDirectLight
         */
-    virtual bool isLightVisible(const Ray ray, const shared_ptr<Light> light) const;
+   // virtual bool isLightVisible(const Ray ray, const shared_ptr<Light> light) const;
 
     /**
         Calculates direct illumination term at a surfel.
     */
-    Radiance3 getDirectLight(const Ray& ray, const shared_ptr<Surfel>& surfel, const Array<shared_ptr<Light>>& lightArray) const;
+    //Radiance3 getDirectLight(const Ray& ray, const shared_ptr<Surfel>& surfel, const Array<shared_ptr<Light>>& lightArray) const;
 
 
         /***
@@ -94,7 +94,7 @@ public:
      /** Main ray tracing method. Finds radiance along ray coming from first intersecting object (looped over).
         Sums L_lights and recursive trace at location to find radiance
     */
-    virtual Radiance3 trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft = 0, const bool isEyeRay = true) const;
+    //virtual Radiance3 trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft = 0, const bool isEyeRay = true) const;
 
    
 };
