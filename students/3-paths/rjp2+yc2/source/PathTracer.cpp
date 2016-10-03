@@ -109,8 +109,8 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
 }
 
 void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradiance3>& biradianceBuffer, const Array<bool>& lightShadowedBuffer, const Array<Ray>& shadowRayBuffer, const Array<shared_ptr<Surfel>>& surfelBuffer, Array<Ray>& rayBuffer, Array<Color3>& modulationBuffer, const bool& multithreading) const {
-    int width = image->width();
     int height = image->height();
+    int width = image->width();
 
     Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
         int i = coord.y * width + coord.x;
@@ -127,11 +127,16 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
         else {
             if (notNull(surfelBuffer[i]) && !lightShadowedBuffer[i]) {
 
-                const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(-rayBuffer[i].direction());
-                const Radiance3& directLight = biradianceBuffer[i];
-                Color3 scatteringDensity = surfelBuffer[i]->finiteScatteringDensity(-shadowRayBuffer[i].direction(), -rayBuffer[i].direction());
+                const Biradiance3 B = biradianceBuffer[i];
+                const Vector3 n = surfelBuffer[i]->geometricNormal;
+                const Vector3 w_i = -shadowRayBuffer[i].direction();
+                const Vector3 w_o = -rayBuffer[i].direction();
+                const Color3 f = surfelBuffer[i]->finiteScatteringDensity(w_i, w_o);
+                const Color3 mod = modulationBuffer[i];
 
-                Radiance3 radiance = emittedLight + (directLight * modulationBuffer[i] * scatteringDensity * abs(surfelBuffer[i]->geometricNormal.dot(-shadowRayBuffer[i].direction())));
+                const Radiance3& emittedLight = surfelBuffer[i]->emittedRadiance(w_o) * mod;
+
+                Radiance3 radiance = emittedLight + B * mod * f * abs(n.dot(w_i));
 
                 image->increment(pixel, radiance);
             }
@@ -258,11 +263,11 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
             biradianceBuffer[i] = biradiance;
 
             // Create shadow ray from light to surfel
-            const Vector3 directionFromLight = (surfelPos - light->position().xyz()).direction();
+            //const Vector3 directionFromLight = (surfelPos - light->position().xyz()).direction();
             // const Point3 bumpedPoint = surfelPos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(directionFromLight))));
-            const Vector3 surfelToLight = surfelPos - light->position().xyz();
-            const float distanceToLight = surfelToLight.length();
-            Ray shadowRay = Ray(light->position().xyz(), surfelToLight.direction(), 0.0f, distanceToLight - EPSILON);
+            const Vector3 lightToSurfel = surfelPos - light->position().xyz();
+            const float distanceToLight = lightToSurfel.length();
+            Ray shadowRay = Ray(light->position().xyz(), lightToSurfel.direction(), 0.0f, distanceToLight - EPSILON);
 
             // Store shadow Ray
             shadowRayBuffer[i] = shadowRay;
