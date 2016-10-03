@@ -125,10 +125,10 @@ void PathTracer::writeToImage(const shared_ptr<Image>& image, const Array<Biradi
 
         }
         else {
-            if (notNull(surfelBuffer)) {
+      /*      if (notNull(surfelBuffer)) {
             
             
-            }
+            }*/
 
             if (notNull(surfelBuffer[i]) && !lightShadowedBuffer[i]) {
 
@@ -244,10 +244,10 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
                 int lightPos = 0;
                 // Select random light
                 // TODO make random bewteen 0 and sum
-                float counter = Random::threadCommon().uniform(0.0f, totalBiradiance);
+                float counter = Random::threadCommon().uniform(0.0f, totalBiradiance-EPSILON);
                 for (int j = 0; j < lightArray.size(); ++j) {
                     counter -= lightArray[j]->biradiance(surfelPos).sum();
-                    if (counter < 0) {
+                    if (counter <0.0f) {
                         lightPos = j;
                         break;
                     }
