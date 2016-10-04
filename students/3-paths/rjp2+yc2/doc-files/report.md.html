@@ -11,12 +11,12 @@ Implementation Design
 ============================================
 
 
-An instance of [RayTracer](MAKE THIS RIGHT) (soon to be renamed) is given an array of surfaces (hopefully this will also change, from which
+An instance of [PathTracer](file:///C:/Users/cs371/Documents/371/3-paths/build/doc/class_path_tracer.html) is given an array of surfaces (hopefully this will also change, from which
 it constructs a [G3D::TriTree](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_embree_tri_tree.html) to be used by the intersection methods.
 
-Our [APP::renderScene](link) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
+Our [PathTracer::renderScene](file:///C:/Users/cs371/Documents/371/3-paths/build/doc/class_path_tracer.html#ad35e1f10dc56ffabcd7e590540403730) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
 
-For the actual tracing part of our algorithm, we will be using Monte Carlo integration for calculating direct illumination (using probabilities determined by Importance Sampling). Indirect rays will be shosen using [Surfel::Scatter](LINK) to give us optimal convergence.
+For the actual tracing part of our algorithm, we will be using Monte Carlo integration for calculating direct illumination (using probabilities determined by Importance Sampling). Indirect rays will be shosen using [Surfel::Scatter](http://graphics.cs.williams.edu/courses/cs371/f10/G3D/manual/class_g3_d_1_1_surfel.html#a49ece9dda77724eeb09ef8ea745a48f7) to give us optimal convergence.
 
 Code is built upon Ryan's, Eli's, Youle's and Matheus's rays code.
 
@@ -50,7 +50,7 @@ Variance with Paths Per Pixel
 Quality Demonstration Images
 ===========================================================
 
-![Quality 1](quality.jpg width = 450)
+![Quality 1](sanMiguel.jpg width = 450)
 
 
 
@@ -139,15 +139,15 @@ Questions
 Self-Review
 =============================================================
 
-Overall, we deserve a solid A++. Positive visualization.
+Overall, we deserve a solid A- / B+.
 
-Code style: ___
+Code style: I'd say our code could be much cleaner in terms of names and efficiency, but I think it's understa
 
-Workflow (as represented by journal): _____
+Workflow (as represented by journal): Our workflow was much better this week (at least for me, Ryan) and so I was much more pleased with how everything went timewise. Definitely room for improvement though. I'd say an A-
 
-Report quality: _____
+Report quality: Our report has some nice images, plus we made it beforehand so had no poor formatting due to time-crunch. So I'd say an A
 
-Report depth/correctness: ___
+Report depth/correctness: As far as I can tell, we met all of the spec, provided good test images, and gave in-depth answers for the questons. So I'd say an A-
 
 
 
@@ -158,7 +158,7 @@ We learned:
     - How to render images using path tracing
     - All of the many maths that went with that
     - How to program in a multi-threading mindset / style
-    - How to pair program
+    - Application of improved workflow skills
 
 
 Workflow
@@ -168,22 +168,23 @@ Workflow
  -------------------------|-----------------------------------------------------------------|--------------:|------------:
   Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     1.50      |  1.5
   Report Draft (Prep)     | Formatted Markdeep document with placeholder text.              |     0.75      |  0.75
-  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |     
-  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  
-  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  
-  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |   
-  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  
-  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  
-  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |
-  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |
-  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  
-  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |   
-  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      | 
-  Run Better Tests/Render | Run better testes with polished codes                          |     0.25      |
-  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    | 
-  Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  
+  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |  0.0 
+  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  0.0
+  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  0.5
+  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |  0.5
+  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  0.5
+  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  2.2
+  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |  0.5
+  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |  0.5
+  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  0.25
+  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |  1.0
+  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      |  0.0
+  Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |  1.0
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    |  6.2
+  Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  0.1
  [Project Workflow Planning Table.]
 
+So a total of 13.3 hours counting from the start of lab. Approximately 6 hours MVP and another 7.3 on polish.
 
 <!-- Markdeep: -->
 <style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace;}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
