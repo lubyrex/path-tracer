@@ -110,7 +110,17 @@ Questions
 4. 
     _Derive an algorithm to sample the numbers from 0 to 100 proportional to their value._ 
     
-    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Use our random generator to get a number f
+    f'=49.50×f
+    for(i in range (0,100)){
+        f'-=i;
+        if(f'<0){
+            return i;
+        }
+    }
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 5. 
     _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
