@@ -4,45 +4,22 @@
 
 /** constructs TriTree object used in PathTracer::intersectRay and PathTracer::triangleIntersect */
 PathTracer::PathTracer(shared_ptr<Scene> scene) {
-    //if (notNull(scene)) {
+  
     setScene(scene);
-    //}
+
 }
 
 void PathTracer::setScene(shared_ptr<Scene> scene) {
     m_scene = scene;
-    //if (notNull(scene)) {
+
     Array<shared_ptr<Surface>> surfaces;
     m_scene->onPose(surfaces);
     m_tris.setContents(surfaces);
-    // }
-     /*   bool differentScene = m_scene->name != scene->name;
-        if (differentScene) {
-            m_scene = scene;
-        }
-
-        bool sceneChanged = max(m_scene->lastEditingTime(), m_scene->lastStructuralChangeTime(), m_scene->lastVisibleChangeTime()) > m_lastTreeBuildTime;
-        if (sceneChanged) {
-             //extract surfaces from the scene
-             rebuild the tree
-             Set up tri-tree representing the scene
-            Array<shared_ptr<Surface>> surfaces;
-            m_scene->onPose(surfaces);
-            m_tris.setContents(surfaces);
-        }*/
+   
 }
 
 void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents) {
-    //Scene changed
-    //bool sceneChanged = max(m_scene->lastEditingTime(), m_scene->lastStructuralChangeTime(), m_scene->lastVisibleChangeTime()) > m_lastTreeBuildTime;
-    //if (sceneChanged) {
-    //    // extract surfaces from the scene
-    //    // rebuild the tree
-    //    // Set up tri-tree representing the scene 
-    //    Array<shared_ptr<Surface>> surfaces;
-    //    m_scene->onPose(surfaces);
-    //    m_tris.setContents(surfaces);
-    //}
+
 
 
 
@@ -102,10 +79,6 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
             generateRecursiveRays(rayBuffer, modulationBuffer, surfelBuffer, multithreading);
         }
 
-        //biradianceBuffer.clear(false);
-        //surfelBuffer.clear(false);
-        //lightShadowedBuffer.clear(false);
-        //shadowRayBuffer.clear(false);
     }
     stopWatch.tock();
 }
@@ -226,7 +199,7 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
 
                 int lightPos = 0;
                 // Select random light
-                // TODO make random bewteen 0 and sum
+             
                 float counter = Random::threadCommon().uniform(0.0f, totalBiradiance);
                 for (int j = 0; j < lightArray.size(); ++j) {
                     counter -= lightArray[j]->biradiance(surfelPos).sum();
@@ -241,18 +214,13 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
 
             Biradiance3 biradiance = light->biradiance(surfelPos);
 
-            // Weight light
-            if (lightArray.size() > 1) {
-                //float probabilityChosenScale = totalBiradiance / biradiance.sum();
-                //biradiance = biradiance * probabilityChosenScale;
-            }
+         
 
             // Store biradiance from light
             biradianceBuffer[i] = biradiance;
 
             // Create shadow ray from light to surfel
-            //const Vector3 directionFromLight = (surfelPos - light->position().xyz()).direction();
-            // const Point3 bumpedPoint = surfelPos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(directionFromLight))));
+       
             const Vector3 lightToSurfel = surfelPos - light->position().xyz();
             const float distanceToLight = lightToSurfel.length();
             Ray shadowRay = Ray(light->position().xyz(), lightToSurfel.direction(), 0.0f, distanceToLight - EPSILON);
@@ -260,9 +228,7 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
             // Store shadow Ray
             shadowRayBuffer[i] = shadowRay;
         }
-        else {
-            //biradianceBuffer[i] = Biradiance3(0.5f);
-        }
+        
     }, !multithreading);
 }
 
@@ -283,96 +249,3 @@ void PathTracer::traceIntersections(const Array<Ray>& rayBuffer, Array<shared_pt
     m_tris.intersectRays(rayBuffer, surfelBuffer, TriTree::COHERENT_RAY_HINT);
 }
 
-//
-//
-//Radiance3 PathTracer::trace(const Ray& ray, const Array<shared_ptr<Light>>& lightArray, const float& indirectCount, const int& recursionsLeft, const bool isEyeRay) const {
-//
-//    // Find intersection between ray and scene
-//    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
-//
-//    if (notNull(surfel)) {
-//        Radiance3 emittedLight = surfel->emittedRadiance(-ray.direction());
-//        Radiance3 directLight = getDirectLight(ray, surfel, lightArray);
-//        Radiance3 indirectLight = Radiance3(0.0f, 0.0f, 0.0f);
-//
-//        // indirect recursive call
-//        if (indirectCount > 0) {
-//            if (recursionsLeft > 0) {
-//                for (int i = 0; i < indirectCount; ++i) {
-//                    const Vector3 direction = G3D::Vector3::cosHemiRandom(surfel->shadingNormal);
-//                    const Point3 surfelPosition = surfel->position;
-//                    Point3 bumpedPoint = surfelPosition + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-direction))));
-//
-//                    Ray recursiveRay(bumpedPoint, direction);
-//
-//                    const Color3 scatter = surfel->finiteScatteringDensity(recursiveRay.direction(), -ray.direction());
-//
-//                    const Radiance3 recursion = trace(recursiveRay, lightArray, indirectCount, recursionsLeft - 1, false);
-//                    indirectLight += recursion * scatter / indirectCount;
-//                }
-//            }
-//        }
-//        else {
-//            indirectLight += surfel->reflectivity(Random::threadCommon()) * 0.05f;
-//        }
-//
-//        return emittedLight + directLight + indirectLight;
-//    }
-//    else {
-//        return Radiance3(0, 0, 0);
-//    }
-//}
-//
-//
-//Radiance3 PathTracer::getDirectLight(const Ray& ray,
-//    const shared_ptr<Surfel>& surfel,
-//    const Array<shared_ptr<Light>>& lightArray) const {
-//
-//    const Point3& pos = surfel->position;
-//    const Vector3& n = surfel->shadingNormal;
-//
-//    Radiance3 directLight;
-//
-//    int numLights = lightArray.length();
-//    for (int i = 0; i < numLights; ++i) {
-//        const shared_ptr<Light>& light = lightArray[i];
-//
-//        const Vector3 directionToLight = (light->position().xyz() - pos).direction();
-//
-//        //Vector3 directionFromLight = (surfelPosition - light->position().xyz()).direction();
-//        const Point3 bumpedPoint = pos + (EPSILON * surfel->geometricNormal * (-sign(surfel->geometricNormal.dot(-directionToLight))));
-//
-//        //directionToLight = (light->position().xyz() - bumpedPoint).direction();
-//        const Ray lightCheckRay(bumpedPoint, directionToLight);
-//
-//        // shading
-//        if (isLightVisible(lightCheckRay, light)) {
-//            const Biradiance3& B = light->biradiance(pos);
-//            Color3 f = surfel->finiteScatteringDensity(lightCheckRay.direction(), -ray.direction());
-//
-//            directLight += B * f * abs(n.dot(lightCheckRay.direction()));
-//        }
-//    }
-//
-//    return directLight;
-//}
-//
-//
-//
-//
-//bool PathTracer::isLightVisible(const Ray ray, const shared_ptr<Light> light) const {
-//
-//    if (!light->castsShadows()) return true;
-//
-//    const shared_ptr<Surfel> surfel = m_tris.intersectRay(ray);
-//
-//    if (notNull(surfel)) {
-//        const float intersectDist = (surfel->position - ray.origin()).squaredLength();
-//        const float lightDist = (light->position().xyz() - ray.origin()).squaredLength();
-//
-//        const bool isBlocked = (intersectDist < lightDist - EPSILON);
-//        return !isBlocked;
-//    }
-//
-//    return true;
-//}
