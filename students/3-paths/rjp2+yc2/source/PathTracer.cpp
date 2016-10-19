@@ -18,9 +18,9 @@ void PathTracer::setScene(shared_ptr<Scene> scene) {
    
 }
 
-void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents) {
+void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel, bool multithreading, int scatteringEvents, shared_ptr<Camera> camera) {
 
-
+    m_camera=camera;
 
 
     // Grab light array for the scene
@@ -77,6 +77,7 @@ void PathTracer::renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatc
 
             // Generate recursive rays and update modulationBuffer
             generateRecursiveRays(rayBuffer, modulationBuffer, surfelBuffer, multithreading);
+            //debugPrintf("%d raysPerPixel %d scatteringEvents",i,j);
         }
 
     }
@@ -186,10 +187,7 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
             shared_ptr<Light> light;
             float totalBiradiance = 0.0f;
 
-            if (lightArray.size() == 1) {
-                light = lightArray[0];
-            }
-            else {
+            
                 // Calculate total biradiance
                 // int total = 0;
                 for (int j = 0; j < lightArray.size(); ++j) {
@@ -210,10 +208,13 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
                 }
                 light = lightArray[lightPos];
 
+            Biradiance3 biradiance;
+            if (totalBiradiance==0.0f){
+            biradiance = Color3(0.0f,0.0f,0.0f);
             }
-
-            Biradiance3 biradiance = light->biradiance(surfelPos);
-
+            else{
+            biradiance = light->biradiance(surfelPos)*totalBiradiance/(light->biradiance(surfelPos).average());
+            }
          
 
             // Store biradiance from light
@@ -223,8 +224,10 @@ void PathTracer::chooseLights(const Array<shared_ptr<Light>>& lightArray, const 
        
             const Vector3 lightToSurfel = surfelPos - light->position().xyz();
             const float distanceToLight = lightToSurfel.length();
-            Ray shadowRay = Ray(light->position().xyz(), lightToSurfel.direction(), 0.0f, distanceToLight - EPSILON);
+            Ray shadowRay = Ray(light->position().xyz(), lightToSurfel.direction(), 0.01f, distanceToLight - EPSILON);
 
+            
+            
             // Store shadow Ray
             shadowRayBuffer[i] = shadowRay;
         }
@@ -237,7 +240,8 @@ void PathTracer::generateRays(Array<Ray>& rayBuffer, const int& width, const int
     Thread::runConcurrently(G3D::Point2int32(0, 0), G3D::Point2int32(width, height), [&](G3D::Point2int32 coord) {
         // TODO bump these around a bit
         //const float x_off = Random::threadCommon().integer();
-        Ray ray = m_scene->defaultCamera()->worldRay(coord.x, coord.y, Rect2D(Vector2(width, height)));
+        Ray ray = m_camera->worldRay(coord.x, coord.y, Rect2D(Vector2(width, height)));
+        
         rayBuffer[width * coord.y + coord.x] = ray;
     }, !multithreading);
 }

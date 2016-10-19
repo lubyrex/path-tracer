@@ -14,6 +14,7 @@ protected:
     /** TriTree used to iterate through all triangles in the scene */
     TriTree m_tris;
     shared_ptr<Scene> m_scene;
+    shared_ptr<Camera> m_camera;
     //Array<shared_ptr<Light>> lights;
 
     RealTime m_lastTreeBuildTime;
@@ -87,7 +88,7 @@ public:
     void setScene(shared_ptr<Scene> scene);
     
 
-    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 1, bool multithreading = true, int scatteringEvents = 0);
+    void renderScene(const shared_ptr<Image>& image, Stopwatch& stopWatch, int raysPerPixel = 1, bool multithreading = true, int scatteringEvents = 0, shared_ptr<Camera> camera=NULL);
 
 
 

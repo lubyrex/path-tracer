@@ -263,7 +263,7 @@ void App::onRender(shared_ptr<Image> &image) {
     PathTracer tracer = PathTracer(scene());
     //tracer.setScene(scene());
     //tracer.m_eyeRayTest = true;
-    tracer.renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents);
+    tracer.renderScene(image, stopWatch, m_raysPerPixel, m_multiThreading, m_scatteringEvents,activeCamera());
 
     // Show / save raw image 
     // Set window caption to amount of time rendering took (not including data structure initialization)
@@ -307,7 +307,7 @@ void App::addRenderGUI() {
         shared_ptr<Image> image;
         try {
             switch (m_resolutionChoice) {
-            case 0:image = (Image::create(1280, 720, ImageFormat::RGB32F()));
+            case 0:image = (Image::create(2240, 1488, ImageFormat::RGB32F()));
                 break;
             case 1:image = (Image::create(320, 200, ImageFormat::RGB32F()));
                 break;
