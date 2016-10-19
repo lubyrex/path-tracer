@@ -39,7 +39,8 @@
                 vignetteTopStrength = 0.5; 
             }; 
             
-            frame = CFrame::fromXYZYPRDegrees(10.476, 0.76049, 3.2492, 47.428, 14.909, 0 ); 
+            //frame = CFrame::fromXYZYPRDegrees(1.7, 0.6, 1.9, 41, -5, 0 ); 
+            frame = CFrame::fromXYZYPRDegrees(-80.012, 33.163, 55.951, -69.008, 5.8862, 0);
             motionBlurSettings = MotionBlurSettings { 
                 cameraMotionInfluence = 0.5; 
                 enabled = false; 
@@ -59,116 +60,62 @@
             visualizationScale = 1; 
         }; 
         
-        cube = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-1.45074, -0.702163, -2.14801 ); 
-            model = "cubeModel"; 
+        castle = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(-23.464, 1.85489, -51.9788 ); 
+            model = "castleModel"; 
         }; 
         
-        cylinderHollowRing = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(9.90223, -17.0874, 0.888988, 0, 50.4256 ); 
-            model = "cylinderHollowRing0"; 
+        ground = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(0, 0, 0, 0, -90, 0 ); 
+            model = "groundModel"; 
         }; 
         
-        cylinderHollowStout = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(1.58841, -2.1717, 3.4773 ); 
-            model = "cylinderHollowStout0"; 
+        knight = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(36.2156, 9.87108, 31.5903 ); 
+            model = "knightModel"; 
         }; 
         
-        cylinderTall = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-4.0504, -3.27992, 2.49248, -84.6775, 21.0078, -28.7392 ); 
-            model = "cylinderTall0"; 
+        old = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(-1.02472, 37.8769, -8.71046, -0.107908, 0.102302 ); 
+            model = "oldModel"; 
         }; 
         
-        cylinderTall_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-1.95553, -0.72993, -2.73256, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-3.96619, -0.72993, 8.3989, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_01 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-5.48536, -0.72993, 2.72428, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_01_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(0.265184, -0.72993, 8.61161, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_01_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(0.728596, -0.72993, 1.20422, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_01_0_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(3.79424, -0.72993, 4.03852, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_01_0_0_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-1.2047, -0.708402, 4.7689, 56.8741, 2.82978e-06, 1.96652 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-3.96619, -0.72993, 8.3989, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        cylinderTall_0_0_0_0 = VisibleEntity { 
-            frame = CFrame::fromXYZYPRDegrees(-5.87205, -0.72993, -1.80976, 56.8741 ); 
-            model = "cylinderTall0"; 
-        }; 
-        
-        lightSource1 = Light { 
-            attenuation = ( 0, 0, 1 ); 
-            bulbPower = Power3(1e+06 ); 
-            castsShadows = true; 
-            frame = CFrame::fromXYZYPRDegrees(-22.3237, 33.9275, 59.3974, -20.6, -28.4 ); 
-            shadowMapBias = 0.01; 
-            shadowMapSize = Vector2int16(2048, 2048 ); 
-            spotHalfAngleDegrees = 4; 
-            spotSquare = true; 
-            type = "SPOT"; 
-        }; 
-        
-        lightSource1_0 = Light { 
-            attenuation = ( 0, 0, 1 ); 
-            bulbPower = Power3(10, 10, 1e+06 ); 
-            castsShadows = true; 
-            frame = CFrame::fromXYZYPRDegrees(39.1543, 31.5079, 47.5125, 40.5028, -27.3474, -24.2921 ); 
-            shadowMapBias = 0.01; 
-            shadowMapSize = Vector2int16(2048, 2048 ); 
-            spotHalfAngleDegrees = 4; 
-            spotSquare = true; 
-            type = "SPOT"; 
-        }; 
-        
-        lightSource1_01 = Light { 
-            attenuation = ( 0, 0, 1 ); 
-            bulbPower = Power3(1000000, 1000000, 1 ); 
-            castsShadows = true; 
-            frame = CFrame::fromXYZYPRDegrees(68.1611, -22.9356, 20.3466, 57.1939, 27.8141, 104.086 ); 
-            shadowMapBias = 0.01; 
-            shadowMapSize = Vector2int16(2048, 2048 ); 
-            spotHalfAngleDegrees = 4; 
-            spotSquare = true; 
-            type = "SPOT"; 
+        rain = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(12.0725, 49.8378, 3.59273 ); 
+            model = "rainModel"; 
         }; 
         
         skybox = Skybox { 
-            texture = "cubemap/nightsky/nightsky_*.jpg"; 
+            texture = "cubemap/noonclouds/noonclouds_*.png"; 
         }; 
         
+          light1 = Light { 
+            attenuation = ( 0, 0, 1 ); 
+            bulbPower = Power3(1e+5 ); 
+            castsShadows = true; 
+            enabled = true; 
+            extent = Vector2(0.75, 0.75 ); 
+            shadowMapSize = Vector2int16(2048, 2048 ); 
+            frame = CFrame::fromXYZYPRDegrees(-50.2269, 32.2025, 53.5725, -62.6347, -4.33422, -6.7306 ); 
+            producesDirectIllumination = true; 
+            producesIndirectIllumination = true; 
+            shadowMapSize = Vector2int16(1024, 1024 ); 
+            spotHalfAngleDegrees = 45; 
+            spotSquare = true; 
+            type = "SPOT"; 
+        }; 
+        
+        sword = VisibleEntity { 
+            frame = CFrame::fromXYZYPRDegrees(36.1997, 54.8125, 31.5996 ); 
+            model = "swordModel"; 
+        }; 
+        
+       
     }; 
     
     lightingEnvironment = LightingEnvironment { 
         ambientOcclusionSettings = AmbientOcclusionSettings { 
-            bias = 0.023; 
+            bias = 0.00945834; 
             blurRadius = 4; 
             blurStepSize = 2; 
             depthPeelSeparationHint = 0.01; 
@@ -177,9 +124,9 @@
             highQualityBlur = true; 
             intensity = 1; 
             monotonicallyDecreasingBilateralWeights = false; 
-            numSamples = 19; 
+            numSamples = 45; 
             packBlurKeys = false; 
-            radius = 0.75; 
+            radius = 1.68223; 
             temporalFilterSettings = TemporalFilter::Settings { 
                 falloffEndDistance = 0.07; 
                 falloffStartDistance = 0.05; 
@@ -204,135 +151,29 @@
     }; 
     
     models = { 
-        cubeModel = ArticulatedModel::Specification { 
-            filename = "model/cube/cube.obj"; 
-            preprocess = { 
-                transformGeometry(all(), Matrix4::scale(50, 0.1, 50 ) ); 
-                setMaterial(all(), Color3(1, 1, 1 ) ) }; 
-            
+        castleModel = ArticulatedModel::Specification { 
+            filename = "castle.obj"; 
         }; 
         
-        cylinderHollowRing0 = ArticulatedModel::Specification { 
-            alphaFilter = "DETECT"; 
-            cachable = true; 
-            cleanGeometrySettings = ArticulatedModel::CleanGeometrySettings { 
-                allowVertexMerging = true; 
-                forceComputeNormals = false; 
-                forceComputeTangents = false; 
-                forceVertexMerging = true; 
-                maxEdgeLength = inf; 
-                maxNormalWeldAngleDegrees = 8; 
-                maxSmoothAngleDegrees = 65; 
-            }; 
-            
-            filename = "C:\\Users\\cs371\\Documents\\371\\2-rays\\data-files\\model\\cylinderHollowRing.off"; 
-            hairOptions = HairOptions { 
-                separateSurfacePerStrand = false; 
-                sideCount = 5; 
-                strandRadiusMultiplier = 1; 
-            }; 
-            
-            heightfieldOptions = HeightfieldOptions { 
-                generateBackfaces = false; 
-                textureScale = Vector2(1, 1 ); 
-            }; 
-            
-            meshMergeOpaqueClusterRadius = "ALL"; 
-            meshMergeTransmissiveClusterRadius = "NONE"; 
-            objOptions = OBJOptions { 
-                stripRefraction = false; 
-                texCoord1Mode = "NONE"; 
-            }; 
-            
-            refractionHint = "DYNAMIC_FLAT"; 
-            scale = 1; 
-            stripLightMapCoords = false; 
-            stripLightMaps = false; 
-            stripMaterials = false; 
-            stripVertexColors = false; 
+        groundModel = ArticulatedModel::Specification { 
+            filename = "square.ifs"; 
+            scale = 20; 
         }; 
         
-        cylinderHollowStout0 = ArticulatedModel::Specification { 
-            alphaFilter = "DETECT"; 
-            cachable = true; 
-            cleanGeometrySettings = ArticulatedModel::CleanGeometrySettings { 
-                allowVertexMerging = true; 
-                forceComputeNormals = false; 
-                forceComputeTangents = false; 
-                forceVertexMerging = true; 
-                maxEdgeLength = inf; 
-                maxNormalWeldAngleDegrees = 8; 
-                maxSmoothAngleDegrees = 65; 
-            }; 
-            
-            filename = "C:\\Users\\cs371\\Documents\\371\\2-rays\\data-files\\model\\cylinderHollowStout.off"; 
-            hairOptions = HairOptions { 
-                separateSurfacePerStrand = false; 
-                sideCount = 5; 
-                strandRadiusMultiplier = 1; 
-            }; 
-            
-            heightfieldOptions = HeightfieldOptions { 
-                generateBackfaces = false; 
-                textureScale = Vector2(1, 1 ); 
-            }; 
-            
-            meshMergeOpaqueClusterRadius = "ALL"; 
-            meshMergeTransmissiveClusterRadius = "NONE"; 
-            objOptions = OBJOptions { 
-                stripRefraction = false; 
-                texCoord1Mode = "NONE"; 
-            }; 
-            
-            preprocess = { 
-                setMaterial(all(), Color3(1, 0, 1 ) ) }; 
-            
-            refractionHint = "DYNAMIC_FLAT"; 
-            scale = 0.2; 
-            stripLightMapCoords = false; 
-            stripLightMaps = false; 
-            stripMaterials = false; 
-            stripVertexColors = false; 
+        knightModel = ArticulatedModel::Specification { 
+            filename = "knight.obj"; 
         }; 
         
-        cylinderTall0 = ArticulatedModel::Specification { 
-            alphaFilter = "DETECT"; 
-            cachable = true; 
-            cleanGeometrySettings = ArticulatedModel::CleanGeometrySettings { 
-                allowVertexMerging = true; 
-                forceComputeNormals = false; 
-                forceComputeTangents = false; 
-                forceVertexMerging = true; 
-                maxEdgeLength = inf; 
-                maxNormalWeldAngleDegrees = 8; 
-                maxSmoothAngleDegrees = 65; 
-            }; 
-            
-            filename = "C:\\Users\\cs371\\Documents\\371\\2-rays\\data-files\\model\\cylinderTall.off"; 
-            hairOptions = HairOptions { 
-                separateSurfacePerStrand = false; 
-                sideCount = 5; 
-                strandRadiusMultiplier = 1; 
-            }; 
-            
-            heightfieldOptions = HeightfieldOptions { 
-                generateBackfaces = false; 
-                textureScale = Vector2(1, 1 ); 
-            }; 
-            
-            meshMergeOpaqueClusterRadius = "ALL"; 
-            meshMergeTransmissiveClusterRadius = "NONE"; 
-            objOptions = OBJOptions { 
-                stripRefraction = false; 
-                texCoord1Mode = "NONE"; 
-            }; 
-            
-            refractionHint = "DYNAMIC_FLAT"; 
-            scale = 0.2; 
-            stripLightMapCoords = false; 
-            stripLightMaps = false; 
-            stripMaterials = false; 
-            stripVertexColors = false; 
+        oldModel = ArticulatedModel::Specification { 
+            filename = "old.obj"; 
+        }; 
+        
+        rainModel = ArticulatedModel::Specification { 
+            filename = "rain.obj"; 
+        }; 
+        
+        swordModel = ArticulatedModel::Specification { 
+            filename = "sword.obj"; 
         }; 
         
     }; 

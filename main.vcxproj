@@ -97,7 +97,7 @@
     <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="data-files\scene\customScene.Any" />
+    <None Include="data-files\scene\custom.Scene.Any" />
     <None Include="data-files\scene\test.Scene.Any" />
     <None Include="doc-files\report.md.html" />
     <None Include="Doxyfile" />
