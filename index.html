@@ -11,10 +11,10 @@ Implementation Design
 ============================================
 
 
-An instance of [PathTracer](doc/class_path_tracer.html) is given an array of surfaces (hopefully this will also change, from which
+An instance of [PathTracer](build/doc/class_path_tracer.html) is given an array of surfaces, from which
 it constructs a [G3D::TriTree](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_embree_tri_tree.html) to be used by the intersection methods.
 
-Our [PathTracer::renderScene](file:///C:/Users/cs371/Documents/371/3-paths/build/doc/class_path_tracer.html#ad35e1f10dc56ffabcd7e590540403730) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
+Our [PathTracer::renderScene](build/doc/class_path_tracer.html#ad35e1f10dc56ffabcd7e590540403730) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
 
 For the actual tracing part of our algorithm, we will be using Monte Carlo integration for calculating direct illumination (using probabilities determined by Importance Sampling). Indirect rays will be shosen using [Surfel::Scatter](http://graphics.cs.williams.edu/courses/cs371/f10/G3D/manual/class_g3_d_1_1_surfel.html#a49ece9dda77724eeb09ef8ea745a48f7) to give us optimal convergence.
 
