@@ -1,0 +1,180 @@
+ <meta charset="utf-8">
+                 **Rays - Report**
+                  **Ryan Patton & Youle Chen
+                    rjp2@williams.edu
+                    yc2@williams.edu**
+
+
+
+
+Implementation Design
+============================================
+
+
+An instance of [PathTracer](doc/class_path_tracer.html) is given an array of surfaces (hopefully this will also change, from which
+it constructs a [G3D::TriTree](http://g3d.cs.williams.edu/g3d/G3D10/build/manual/class_g3_d_1_1_embree_tri_tree.html) to be used by the intersection methods.
+
+Our [PathTracer::renderScene](file:///C:/Users/cs371/Documents/371/3-paths/build/doc/class_path_tracer.html#ad35e1f10dc56ffabcd7e590540403730) is the the highest level of abstraction. We will be looping over each pixel in the image we want to create, and combining the average of multiple rays (sent at slightly different angles) traced through that pixel to determine its radiance. We will do this with an inverted loop structure, doing all similar actions at the same time and storing the results in buffers to allow for the strategy of SIMD batch-processing multithreading. 
+
+For the actual tracing part of our algorithm, we will be using Monte Carlo integration for calculating direct illumination (using probabilities determined by Importance Sampling). Indirect rays will be shosen using [Surfel::Scatter](http://graphics.cs.williams.edu/courses/cs371/f10/G3D/manual/class_g3_d_1_1_surfel.html#a49ece9dda77724eeb09ef8ea745a48f7) to give us optimal convergence.
+
+Code is built upon Ryan's, Eli's, Youle's and Matheus's rays code.
+
+
+Correctness Tests
+=============================================================
+
+![Eye Ray Directions](doc-files/eye-ray-directions.png width = 300) ![World-Space Hit Positions](positions.png width = 300)
+![World-Space Geometric Normals](doc-files/normals.png width = 300) ![Cornell Box](doc-files/direct.png width = 300)
+
+![Box w/ Mirror and Glass Balls](doc-files/1.png width = 300) 
+
+![2 Scattering Events](doc-files/2.png width = 150) ![3 Scattering Events](doc-files/3.png width = 150)
+![4 Scattering Events](doc-files/4.png width = 150) ![10 Scattering Events](doc-files/10.png width = 150)
+
+
+Performance
+===========================================================
+
+Variance with Scattering Depth
+-------------------------------------------
+![](doc-files/scattering-depth.png)
+
+
+Variance with Paths Per Pixel
+-------------------------------------------
+![](doc-files/paths-per-pixel.png)
+
+
+
+Quality Demonstration Images
+===========================================================
+
+![San Miguel](doc-files/2016-10-03_004_San_Miguel.png width = 450)
+
+
+
+Phenomena Demonstration Images
+===========================================================
+
+
+![Caustics](doc-files/caustics.png width = 150) ![Diffuse Interreflection](doc-files/diffuseInterreflection.png width = 150) ![Soft Shadows](doc-files/softShadows.png width = 150) ![Mirror Reflections](doc-files/mirrorReflection.png width = 150)
+
+
+Questions
+=============================================================
+
+1. 
+    _Why does it take four scattering events to produce a caustic? Give a diagram or otherwise explain what those events are._ 
+    
+    As the graph suggests, there are exactly 4 rays of light needed in order to travel through all the surfaces of the spheres and hits our eye eventually.
+    *******************************************************************
+    * how light travels through the sphere:                           *
+    *                                                                 *
+    *                        |                                        *
+    *                        |                                        *
+    *                --------v-----------  upper surface              *
+    *                         \                                       *
+    *                          \                                      *
+    *                           \                                     *
+    *                            \                                    *
+    *                             v                                   *
+    *                   ----------|--------    lower surface          *
+    *                             |   eye                             *
+    *                             |  ^                                *
+    *                             | /                                 *
+    *                   ----------v---------   floor                  *
+    *                                                                 *
+    *******************************************************************      
+
+2.
+     _Derive an asymptotic bound on the run time of the global illumination renderer from the Rays project, were it to recurse to an arbitrary path depth. _ 
+    
+    $n$: pixels,
+    $d$: maximum path depth,
+    $p$: primary rays per pixel,
+    $L$: lights in the scene,
+    $r$: recursive rays
+
+    The run time is $O(n×p×L×r^d)$,
+
+    For each pixel in the image, we trace p rays, and computed direct illumination from all sources of light L, and the run time so far is $O(n×p×L)$. For each of these events, we trace back r recursive rays, for d depth, which means in total we create $(r^d)$ rays for each event. Therefore the final run time is $O(n×p×L×r^d)$.
+   
+3.
+    _Derive an asymptotic bound on the run time of the path tracer from this project using the same variables from the previous question._ 
+
+   The run time is $O(n×p×d)$. 
+   
+   The reasoning is basically the same as the previous question, except in this project, we use importance sampling and only pick one "important" light from all the light sources to represent all the light source. We also only have 1 recursive ray for every primary ray per pixel.
+
+4. 
+    _Derive an algorithm to sample the numbers from 0 to 100 proportional to their value._ 
+    
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Use our random generator to get a number f
+    f'=49.50×f
+    for(i in range (0,100)){
+        f'-=i;
+        if(f'<0){
+            return i;
+        }
+    }
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+5. 
+    _In your own words (and with equations and diagrams as needed), present an mathematically rigorous argument that path tracing as presented in this project converges to a true solution to the rendering equation as the path length and number of paths per pixel approach infinity. State any assumptions underlying that argument explicitly._ 
+
+        When we are calculating the true solution to the rendering equation for a surfel we are looking at the light emitted by that surfel plus the integral of all the light that is being reflected off of that surfel. However, as that is unrealistic to calculate, we approximate looking at all directions by using a Reimann Sum of a discrete number of randomly chosen directions, i.e. ∑L_i(X,L)∗f(ωi,ωo)∗|ωi⋅n|∗β(L,X). 
+
+     We control the span of this sum with two variables: 
+        - number of paths per pixel, which controls the number of random directions we are looking at to calculate the indirect light.
+        - path length, with controls the number of times we look for indirect light.
+  
+
+ Therefore, assuming that as we randomly select directions to look for indirect light we are uniformly sampling the space, as paths per pixel and path length both approach infinity, our Reimann sum should become equivalent to the integral used to find the true solution to the rendering equation.
+
+
+
+Self-Review
+=============================================================
+
+Overall, we deserve a solid A- / B+.
+
+Code style: I'd say our code could be much cleaner in terms of names and efficiency, but I think it's understa
+
+Workflow (as represented by journal): Our workflow was much better this week (at least for me, Ryan) and so I was much more pleased with how everything went timewise. Definitely room for improvement though. I'd say an A-
+Report quality: Our report has some nice images, plus we made it beforehand so had no poor formatting due to time-crunch. So I'd say an A
+
+Report depth/correctness: As far as I can tell, we met all of the spec, provided good test images, and gave in-depth answers for the questons. So I'd say an A-
+Skills
+============================================================
+We learned:
+    - How to render images using path tracing
+    - All of the many maths that went with that
+    - How to program in a multi-threading mindset / style
+    - Application of improved workflow skills
+Workflow
+==========================================================================================================
+ Task                     | Description                                                     |Planned Time(h)| Actual Time
+ -------------------------|-----------------------------------------------------------------|--------------:|------------:
+  Lab Setup (Prep)        | Get files and repos setup, plan workflow                        |     1.50      |  1.5
+  Report Draft (Prep)     | Formatted Markdeep document with placeholder text.              |     0.75      |  0.75
+  UI Development Draft    | Make GUI appear with all buttons and options                    |     0.25      |  0.0 
+  Path-Tracing Loop Draft | Iterates over all pixels, post-processes image (not yet though) |     1.00      |  0.0
+  PathTracer Draft        | Rewrite method signatures / adding new ones                     |     0.50      |  0.5
+  Imp. Sampling Draft     | Write method signature and put dummy code in                    |     0.25      |  0.5
+  Path-Tracing Loop MVP   | Turn pseudocode into actual code                                |     1.00      |  0.5
+  PathTracer MVP          | Rewrite code to work with shallow tracing                       |     1.00      |  2.2
+  Imp. Sampling MVP       | Generate pretty good values                                     |     1.00      |  0.5
+  Run Initial Tests/Render| Start running tests / rendering required images                 |     0.25      |  0.5
+  UI Development MVP      | Render button leads to screen / scene / and image changes       |     0.50      |  0.25
+  Report MVP              | Probably-correct answers and quick screenshots.                 |     0.25      |  1.0
+  Double-Check Spec       | Make 100% certain that meet all of the specs                    |     0.75      |  0.0
+  Run Better Tests/Render |  Run better testes with polished codes                          |     0.25      |  1.0
+  Overall Polish          | 100% correct, and working GUI.                                  |   2.5 - 42    |  6.2
+  Report Polish           | Grammar and spelling, content 100% correct                      |     1.50      |  0.1
+ [Project Workflow Planning Table.]
+So a total of 13.3 hours counting from the start of lab. Approximately 6 hours MVP and another 7.3 on polish.
+<!-- Markdeep: -->
+<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace;}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
